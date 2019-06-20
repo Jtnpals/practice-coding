@@ -29,8 +29,25 @@ def normalize_data(filename):
     np.savetxt(f"./normalized_data/normalized_{filename}.csv", robust_data, delimiter=",")
 
 
-for i in ['blink_total', 'chewing_total', 'clench_total', 'nod_total', 'nothing_total']:
-    normalize_data(i)
+def combine_data(*filename):
+    data_len_list = []
+    total_list = []
+    total_data = pd.DataFrame(columns={'neural1', 'neural2', 'neural3', 'neural4'})
+    for i in filename:
+        data = pd.read_csv(f'./normalized_data/normalized_{i}.csv', names=['neural1', 'neural2', 'neural3', 'neural4'])
+        data_len = int((data.shape[0] + 1) / seq_len)
+        data_len_list.append(data_len)
+        total_data = total_data.append(data, sort=False)
+    for i, j in zip(range(0, 6), data_len_list):
+        zero = np.ones(j, dtype='int32') * i
+        total_list.extend(zero)
+    print(total_list)
+    print(total_data)
+
+
+combine_data('blink_total', 'chewing_total', 'clench_total', 'nod_total', 'nothing_total')
+# for i in ['blink_total', 'chewing_total', 'clench_total', 'nod_total', 'nothing_total']:
+#     normalize_data(i)
 
 # data = pd.read_csv("./blink_total.csv", header=None)
 # print(data.values)
