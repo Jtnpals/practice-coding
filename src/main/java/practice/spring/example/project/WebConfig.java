@@ -19,7 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
     public FilterRegistrationBean<MainFilter> myFilter(){
         FilterRegistrationBean bean = new FilterRegistrationBean();
         bean.setFilter(new MainFilter());
-        bean.setUrlPatterns(Arrays.asList("/user/list"));
+        bean.setUrlPatterns(Arrays.asList("/user/list", "/user/edit"));
         return bean;
     }
 
