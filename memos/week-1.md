@@ -708,3 +708,553 @@ int main(){
 
 ---
 
+## JAVA
+
+```java
+class Apple3{
+    int data = 0;
+    int add(int i, int j){
+        return 100;
+    }
+}
+// 멤버변수 ( property ), 멤버함수 ( method )
+// 클래스로 할수있는것 -> 참조형 변수 선언, 인스턴스 생성
+// 인스턴스와 클래스 관계, 참조형 변수와 인스턴스 관계.
+public class Test26 {
+    public static void main(String[] args) {
+        Apple3 t = new Apple3();
+        int i = t.add(10,20);
+        System.out.println(i);
+    }
+}
+```
+
+​	참조형 변수는 인스턴스를 가리키기 위한 것
+
+ **객체지향 3대 속성**
+
+1. 상속성: 클래스를 상속해서 클래스를 만든다.
+2. 은닉성: 감추고 싶은건 감출 수 있다.
+3. 다형성: 하나의 심볼(이름)이 여러 실체에 매핑될 수 있다.
+
+```java
+class A {
+    int apple = 10;
+}
+//클래스 B는 클래스 A를 상속하여 만들었음을 명시.
+// A에서 선언한 멤버변수는 멤버함수를 내려받겠다.
+class B extends A{
+    int add(int i, int j){return  100;}
+}
+public class Test27 {
+    public static void main(String[] args) {
+		B t = new B();
+        System.out.println(t.apple);
+    }
+}
+```
+
+```
+결과값 : 100
+```
+
+> B는 A클래스를 상속받고 있음
+
+**클래스를 가지고 할 수 있는 3가지**
+
++ 참조형 변수의 선언
++ 인스턴스 생성
++ 상속받아 클래스 선언
+
+*위 코드가 에러가 안나는 이유?*
+
+new를 통해 B클래스의 인스턴스를 생성하는데 이 때, A를 상속받은 B클랙스의  참조형 변수t가 이렇게 생성된 인스턴스를 가리킴으로써 인스턴스 내부에서 부모클래스의 멤버변수에 접근할 수 있게되기 때문.
+
+```java
+class Apple4{
+    int data = 0;
+    // return이 존재하지 않는 함수를 서브루틴이라 한다.
+    //리턴타입을 void로 한다.
+    void print(){
+        System.out.println(this.data);
+    }
+}
+public class Test28 {
+    public static void main(String[] args) {
+	    Apple t = new Apple();
+        t.data = 10;
+        t.print();
+        Apple l = new Apple();
+        l.data = 20;
+        l.print();
+    }
+}
+```
+
+```
+결과값 : 10 20
+```
+
+> 멤버함수안에서 자신이 소속된 인스턴스에 대한 포인터 : this
+
+함수하나의 길이가 크다고해서 인스턴스를 많이 생성하면 메모라에 부담가나? -> No
+
+##  Java로  리스트 만들기
+
+### 연결 리스트
+
+```java
+class Node{ //외워라!
+    int data = 0; //  대입은 원래 불가능하나 선언과 동시에 대입은 가능함
+    Node next = null; //가리키고 싶지않다.
+
+    Node( int i , Node n){ //생성자 일반적 예시
+        this.data = i;
+        this.next = n;
+    }
+}
+public class Test29 {
+    public static void main(String[] args) {
+        Node head = new Node(0,null);		//Step 1
+        Node tail = head;
+
+        tail.next = new Node(10, null);			//Step 2
+        tail = tail.next;
+
+        tail.next = new Node(20, null);			//Step 3
+        tail = tail.next;
+
+        for( Node t =head.next ; t !=null ; t=t.next){		//Step 4
+            System.out.println(t.data);
+        }
+    }
+}
+/*
+    모든 참조형 변수에는 null 이라는 값이 대입 가능 : 가리키는 인스턴스 없다.
+    -어떻게 돌아가는지 상황파악을 그림으로 설명 가능할 것.
+ */
+```
+
+```
+출력값 : 10 20
+```
+
+위 코드의 객체 상태변화는 아래 그림과 같다.
+
+![Class State](D:\Github\java-sw-camp\images\nodeflow.png)
+
+### 연결리스트 클래스화
+
+```java
+class Node{
+    int data = 0;
+    Node next = null;
+    Node( int i , Node n){
+        this.data = i;
+        this.next = n;
+    }
+}
+class LinkedList {
+    Node head = null;
+    Node tail = null;
+    public LinkedList() {
+        this.head = new Node(0, null);
+        this.tail = this.head;
+    }
+    void add(int i){
+        tail.next = new Node(i, null);
+        tail = tail.next;
+    }
+    public void print() {
+        for (Node t = head.next; t !=null; t=t.next) {
+            System.out.println(t.data);
+        }
+    }
+}
+public class Test29 {
+    public static void main(String[] args) {
+       LinkedList l = new LinkedList();  //Step 1
+       l.add(10);  //Step 2
+       l.add(20);  //Step 3
+       l.print();
+
+    }
+}
+```
+
+```
+출력값 : 10 20
+```
+
+위 코드의 객체 상태변화는 아래 그림과 같다.
+
+![linkedlistflow](..\images\linkedlistflow.png)
+
+## Java 상속
+
+```java
+class A{
+    A(){
+        System.out.println("A constructor");
+    }
+}
+class BB extends A{
+    B() {
+        System.out.println("B constructor");
+    }
+}
+public class Test31 {
+    public static void main(String[] args) {
+        new B();
+    }
+}
+```
+
+```
+결과값: A constructor   B constructor
+```
+
+
+
+상속관계가 존재할때 ( 조상클래스 , 자손클래스 ) 자손의 인스턴스를 생성하면 조상의 생성자가 먼저 호출되고, 자손의 생성자가 호출된다.
+
+==이떄 인스턴스는 두번 생성되는것 처럼보이지만 하나가 생성되고 조상과 자손을 호출하는 것이다==
+
+생성자는 상속되지 않는다. 다만 호출될 뿐이다 : 멤버함수가 아니라서
+
+```java
+        B t = new B();
+        t.B();   // 이부분에서 에러가남
+```
+
+따라서 위와 같은 코드에서는 `t.B();` 생성자를 찾을수 없다고 뜸
+
+```java
+class A{
+    void print(){
+        System.out.println("A print");
+    }
+}
+class B extends A{
+    void print(){
+        System.out.println("B print"); // method overriding
+        super.print();// 부모의 함수를 호출하고 싶을때
+    void print2(){
+        System.out.println("B print2");
+    }
+}
+public class Test32 {
+    public static void main(String[] args) {
+        B t = new B();      //자손 B호출
+        t.print();
+        A t2 = new A();         //조상 A 호출
+        t2.print();
+        A t3 = new B();        //자손 B 호출
+        t3.print();
+        //조상에서 선언된 멤버함수, 멤버변수만 호출 가능
+        //t3.print()2;     -------> 에러남
+    }
+}
+```
+
+```
+결과값 : B print A print A print B print A print
+```
+
+> 조상에서 선언한 멤버함수를 다시 자손에서 선언 할 수있다.
+>
+> 자손의 인스턴스를 호출하면 자손의것으로 나옴
+>
+> 상속은 클래스와 클래스에서 일어남
+
+```java
+       A t3 = new B();
+        t3.print();
+//        B t4 = (B) new A();//에러남 캐스팅되지않음
+//        t4.print();   //다운캐스팅은 일반적으로 불가
+        B t4 = (B) t3;   //이 경우 다운캐스팅이됨
+        t4.print();         //JVM이 무슨형인지 추리할수 있기때문
+```
+
+>다운캐스팅은 일반적으로 불가하나 JVM이 그 부모를 알 수 있는경우, 자료형의 경우 다운캐스팅이 가능(업캐스팅이 선행된 경우)
+
+```java
+class A{
+    int i = 100;   //  <------
+    void print(){
+        System.out.println("A print");
+    }
+}
+class B extends A{
+    int i = 200;  //  <-----
+    void print2(){
+        System.out.println("B print2");
+    }
+}
+public class Test {
+    public static void main(String[] args) {
+        A t = new B();
+        t.print();
+        System.out.println(t.i);
+    }
+}
+```
+
+```
+결과값 : B print2   100
+```
+
+> ==멤버변수에는 오버라이딩이라는 개념이 없기떄문==에 이 경우 부모의 i값인 100이 출력된다
+
+![overridingflow](..\images\overridingflow.png)
+
+### 은닉성
+
++ 상속 x, 외부노출x, 내가 쓰는것 : **private**
+
++ 상속 o, 외부노출x, 내가 쓰는것 : **protected**
+
++ 상속 o, 외부노출o, 내가 쓰는것 : **public
+
+1.  **protected** :같은 패키지에서는 접근가능 / 다른패키지에서는 접근 불가
+
+2. **friendly(defualt)** : 같은 패키지에서는 public / 다른패키지에서는 private
+
+   ``public > protected > friendly > protect``  순으로 자유로움
+
+>  참조 : https://hunit.tistory.com/162
+
+|                   클래스내부                    |        동일패키지 접근가능         |               다른패키지 접근불가               |
+| :---------------------------------------------: | :--------------------------------: | :---------------------------------------------: |
+| public<br />protected<br />default<br />private | public<br />protected<br />default | protected(상속시가능)<br />default<br />private |
+
+멤버변수에는 오버라이딩이라는 개념이 없기떄문에 이 경우 부모의 i값인 100이 출력된다
+
+-> 때문에 Getter를 이용하여 자신의 값을 호출하게 만듬
+
+```java
+class A{
+    private int data =100;
+	public int getData(){ return data;}
+}
+class B extends A{
+    private int data =200;
+    public int getData(){return data;}
+}
+public class Test{
+    public void static main(String[] args){
+        A t = new B();
+        System.out.println(t.getData());
+    }
+}
+```
+
+```
+결과값 : 200
+```
+
+B 클래스의 getData가 호출이되서 혼란이 방지됨
+
+""조상에서 getXXX 함수가 보이면 그런 변수가 있는줄 알고 xXX 변수는 피해간다.""
+
+<u>이경우 `getData()`로 부모클래스의 data를 부르려고 하면 `getData()`가 오버라이딩 되어있기 때문에 접근이 힘들어진다.</u>
+
+## 추상클래스
+
+```java
+abstract class A{
+    public abstract void print();
+}
+abstract class B{}
+class C extends B{}
+abstract class D extends C{}
+public class Test1 {
+    public static void main(String[] args) {
+//      A t = new A();
+        A t = null;
+    }
+}
+```
+
+추상메소드 : 선언되었지만 구현되어있지않은  메소드
+
+만일 abstract 메소드가 하나라도 선언되어있으면 그 메소드를 가진 클래스는 반드시 abstract클래스로 정의하여야 한다.
+
+다만 B클래스와 같이 아무것도 없는 abstract클래스는 만들 수 있다.
+
++ abstract class는 instance를 못만든다.
++ 변수선언은 가능
++ C 클래스처럼 상속또한 가능하다.
+
+```java
+abstract class A{
+    public abstract void print();
+}
+abstract class B extends A{}  //  <-------
+class C extends A{			// <------
+    @Override
+    public void print() {
+         System.out.println("hi");
+    }
+}
+public class Test1 {
+    public static void main(String[] args) {
+        A t = new C();   // <------
+        t.print();
+    }
+}
+```
+
+```
+결과값 : hi
+```
+
+B클래스처럼 abstract class로부터 상속은 이상없지만 C class와 같이 abstract class가 아닌 class가 abstract클래스를 상속받은경우 구현해줘야함.
+
+`A t = new C();` 의 경우 조상의 참조형 변수로 자손을 만드는것은 가능하고, 조상의 함수를 호출한 경우 자손의 함수가 호출되므로 오버라이딩 된 구현부가 호출이됨
+
+![abstarctflow](..\images\abstarctflow.png)
+
+> 아래 코드의 동작과정
+
+```java
+A t = new C();
+t.print();
+```
+
+### 추상클래스 사용 예(Template Method Pattern)
+
+````java
+abstract class Bank{
+    public abstract double calc(double money, int years, double rate);
+    public void print(){
+        double r = calc(100, 100, 0.066);
+        System.out.println(r);
+    }
+}
+class BokriBank extends Bank{
+    @Override
+    public double calc(double money, int years, double rate) {
+        return 59665.1234 * subCalc();
+    }
+    private int subCalc(){return 3;}
+}
+class DanriBank extends Bank{
+    @Override
+    public double calc(double money, int years, double rate) {
+        return 760.0 + money();
+    }
+    private int money(){return 100;}
+}
+public class Test2 {
+    public static void main(String[] args) {
+        Bank bk = new BokriBank();
+        bk.print();
+        Bank bk2 = new DanriBank();
+        bk2.print();
+    }
+}
+````
+
+```
+결과값 : 178995.3702   860.0
+```
+
+> 자주 변하는 부분과 자주 안변하는부분을 나누어 자주변하는 부분을 자유롭게 바꿔서 사용할 수있음
+>
+> 복리와 단리 마음대로 바꿀 수 있음 (템플릿 메소드 패턴)
+>
+> 여기서 `subClac()`, `money()`와 같은 독자적인 구동도 구현가능
+
+## 인터페이스
+
+```java
+interface ICalc{
+    public void print(); //인터페이스 안에는 모두 추상자료형이여야함
+}
+interface IUnknown{}
+class Apple{}
+class Calc extends Apple implements ICalc, IUnknown{
+    @Override
+    public void print() {
+        System.out.println("A");
+    }
+}
+
+public class Test3 {
+    public static void main(String[] args) {
+        ICalc ic = new Calc();
+        ic.print();
+    }
+}
+```
+
++ 인터페이스는 일종의 abstract 클래스이다. - 변수선언, 상속당할 수 있음 --> 다만 인스턴스 생성 불가.
+
++ 인터페이스 상속해서 클래스를 선언할 때는 implements를 이용해야한다.
+
++ 다중상속가능, 클래스 상속과 인터페이스 동시상속 가능
+
+  
+
+### 인터페이스를 이용한 Decorator Pattern
+
+```java
+interface IGreet {
+    public String greet();
+}
+class MerciGreet implements IGreet{
+    @Override
+    public String greet() {
+        return "Merci";
+    }
+}
+class HelloGreet implements IGreet{
+    @Override
+    public String greet() {
+        return "hello";
+    }
+}
+abstract class GreetDeco implements IGreet{
+    protected IGreet ig = null;
+
+    public GreetDeoo(IGreet ig) {
+        this.ig = ig;
+    }
+}
+// 자손의 생성자에서 조상의 생성자 중 매개변수 있는 생성자를 호출 원하면 supoer로 지정.
+class StarDeco extends GreetDeoo{
+    public StarDeco(IGreet ig) {
+        super(ig);
+    }
+    @Override
+    public String greet() {
+        return "" + ig.greet() + "*";
+    }
+}
+class SharpDeco extends GreetDeoo{
+    public SharpDeco(IGreet ig) {
+        super(ig);
+    }
+    @Override
+    public String greet() {
+        return "" + ig.greet() + "#";
+    }
+}
+public class Test4 {
+    public static void main(String[] args) {
+        IGreet ig= new SharpDeco(new StarDeco(new HelloGreet()));
+        System.out.println(ig.greet());
+    }
+}
+```
+
+```
+결과값 : hello*#
+```
+
+추가상식 : interface는 public을 명시안해도 컴파일시 자동으로 추가해줌
+
+
+
+![uml](..\images\uml.PNG)
