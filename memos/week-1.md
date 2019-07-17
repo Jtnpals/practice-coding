@@ -841,7 +841,7 @@ public class Test29 {
 
 위 코드의 객체 상태변화는 아래 그림과 같다.
 
-![Class State](D:\Github\java-sw-camp\images\nodeflow.png)
+![Class State](..\images\nodeflow.png)
 
 ### 연결리스트 클래스화
 
