@@ -1255,6 +1255,797 @@ public class Test4 {
 
 추가상식 : interface는 public을 명시안해도 컴파일시 자동으로 추가해줌
 
-
-
 ![uml](..\images\uml.PNG)
+
+> 데코레이터 패턴 UML
+
+# Day4
+
+---
+
+
+
+## Method Overloading
+
+```java
+class Temp{
+    public void print(){};
+    public void print(int i){
+        System.out.println(1);
+    };
+    public void print(double i){
+        System.out.println(2);
+    };
+    public void print(int i, int j){
+        System.out.println(3);
+    };
+}
+public class Test40 {
+    public static void main(String[] args) {
+        Temp t= new Temp();
+        t.print();
+//        float j = 3.14;     큰타입 Double(3.14) -> 작은타입 float(j)로 바로 변환 x
+        float i = (float) 3.14; //방법 1  강제형변환
+        float j = 3.14f; //방법2  float = float
+        t.print(j);// 매개변수가 딱 맞지 않으면 가장 가깝게 자동형변환 되는것을 찾아서 호출
+    }
+}
+
+```
+
+```
+결과값 : 2
+```
+
+하나의클래스 안에 이름은 같은데 매개변수 형태가 다른 함수가 여러개 공존가능
+
+```java
+class A{
+    int i = 100;
+}
+class B extends A{
+    int i = 200;
+    void print(){};
+}
+public class Test40 {
+    public static void main(String[] args) {
+        A t1 = new B();
+        System.out.println(t.i);
+        //t 포인터가 가리키는 인스턴스를 감싸는 B클래스 인스턴스를 t2가 가리킨다.
+        B t2 = (B)t;
+        t2.print();
+        System.out.println(t2.i); //갑자기 i값이 변하므로 private해주는게 좋음
+    }
+}
+```
+
+멤버함수에는 Overriding 이라는 개념이있지만 멤버변수에는 Overriding 개념이 없음
+
+![extendsflow](..\images\extendsflow.png)
+
+> 상단 코드의 개략
+
+형변환을 했을때 예기치못한 변수의 변화가 생길 수 있으므로 같은이름으로 하는것은 금지!
+
+클래스 안에 올 수 있는것
+
+(변수 선언, 함수 선언)을 할 수 있고 이렇게 선언된 걸 (멤버 변수, 멤버 함수)이다.
+
+
+
+1. 실행시키면 main이 먼저 올라오고
+2. static으로 선언되면 클래스가 메모리에 올라올때 인스턴스가 생성되기전에 메모리를 할당받음
+
+자바 실행환경은 클래스가 필요해지면 . class 파일을 메모리에 올린다. 그 후에 인스턴스 생성이 가능하다.
+
++ static 멤버는 클래스 로딩시에 메모리를 할당받는다. 무조건 유일하다.
+
++ non-static 멤버는 인스턴스가 생성 될때 메모리를 할당받는다. 인스턴스마다 따로따로 존재
+
+instance가 100번 생성되도 class는 설계도이니 최초에 한번만 올라옴 이때 스태틱은 전역변수처럼 1개만 올라옴
+
+```java
+class Temp{
+  static int i = 100;
+  static void print(){
+      System.out.println(i);
+  }
+  void func(){
+      System.out.println("hi");
+  }
+  static class Temp2{
+      private int i = 3;
+      public void getI(){
+      }
+      static void print(){
+          System.out.println("hi");
+      };
+  }
+}
+public class Test40 {
+    public static void main(String[] args) {
+        int j = Temp.i;
+        Temp t = new Temp();
+        t.func();
+        Temp.print();
+        Temp.Temp2.print();
+    }
+}// static 멤버는 클래스명. 심볼 형태로 접근
+
+```
+
+```
+결과값 : hi  100 hi
+```
+
+> Static 멤버함수 안에서는 non-static한 멤버함수 멤버변수에 접근 할 수 없다.
+>
+> 메모리에 아직 안올라와있기 때문
+
+(  abstract 클래스는 인스턴스를 생성 할 수 없다.  )
+
+---
+
+## 복습
+
++ class 
++ instance
++ 로컬변수 함수가 호출될 때 메모리할당
++ 멤버변수 클래스내에 선언된 변수 인스턴스가 생성될떄 메모리 할당(static이 아닌경우)
++ 매개변수 일종의 로컬변수로 함수호출시 생성
++ 참조형변수 인스턴스를 가리키기위한 용도 : class 이름으로 선언
++ 자료형변수 byte short int long float double boolean char
++ 생성자함수 인스턴스가 생성될떄 호출 되는 함수, 주로 멤버변수를 초기화하는데 사용
+
+...
+
+- extends 인터페이스 외 클래스 상속 1개만가능
+- implements 인터페이스 상속
+- interface(abstract만 가지고 있는 클래스) 
+- abstract class(하나의 abstract method가 있는경우 무조건)  
+- abstract method(선언은 되었지만 구현은 없는경우)
+- overriding( 부모로부터 상속)
+- overloading( 같은 이름의 메소드 다른 매개변수)
+- 자료형변수_캐스팅 : 큰 형태에서 작은형태 x 작은 형태에서 큰형태 o
+- 참조형 변수_캐스팅 (큰박스가 작은박스를 감싸는 모양)
+- 자료형 변수의 대입 : 오른쪽의 값을 복사해서 왼쪽에 대입
+- 참조형 변수의 대입 : 오른쪽이 가리키는 대상이왼쪽을 가리킴
+- private : 나만쓸수있음
+- public : 나쓸수있고 참조형변수도되고 자손도가능
+- protected : 나쓸수있고 자손도가능
+- friendly(default) : 같은패키지에서는 public 다른패키지에서는 private
+- `A t = new B() ` 조상의 참조형 변수로 자손을 만드는것은 가능하고, 조상의 함수를 호출한 경우 자손의 함수가 호출되므로 오버라이딩 된 구현부가 호출이됨
+
+## JAVA의 배열
+
+```java
+public class Test045 {
+    public static void main(String[] args) {
+        int[] i = new int[]{1,2,3,4};  // new를 썼으므로 자바의 배열은 instance
+        for (int j: i) {               // i는 고로 참조형 변수
+            System.out.println(j);
+        }
+        System.out.println(i.length); //그래서 멤버변수를 가지고 있음
+    }
+}// 배열 : 동일한 형태의 기억잦ㅇ소가 연속으로 할당된 기억공간
+```
+
+```
+결과값 : 1 2 3 4 4
+```
+
+`int[] i = new int[]{1,2,3,4};` 는 `int[] i = {1,2,3,4};` 로 축약해서 사용할 수있다.
+
+```java
+        for (int j = 0; j < i.length; j++) {
+            System.out.println(i);
+        }
+```
+
+>  for문으로 구현할시는 요로케
+
+```java
+        for (int j = 0; j < i.length; j++) {
+            if( j == 2){
+                break;    // continue;
+            }
+            System.out.println(i);
+        }
+```
+
++ `break;` 는 반복문을 탈출
++ `continue;` 이하의 코드는 수행을 건너뛰고 반복을 계속
+
+## Object Class
+
+```java
+class Temp{
+}
+// java에서는 기본적으로 제공되는 클래스들이 많은데
+// java,lang 패키지에 소속된 클래스는 import 없이 사용 가능하다.
+//(가장 기본적인 클래스모음, 막 가져다 써도 된단 이야기)
+public class Test048 {
+    public static void main(String[] args) {
+        Object t = new Temp();
+        System.out.println(t.toString());// toString()은 Object에 선언되었고, 상속되었다.
+        Object t2 = new Temp();
+        System.out.println(t2.toString());
+    }
+}
+```
+
+```
+결과값 : Temp@460141958  Temp@1163157884
+```
+
+>Temp@1b6d3586  : 클래스명@해시코드값(인스턴스가 다르면 숫자값 다름)
+
+조상 클래스를 지정하지 않으면 Object로부터 상속받는다. Object는 모든 클래스의 조상
+
+ Object는 어떤타입의 인스턴스도 가르킬수있다. (조상이니까)
+
+toString()은 Object.class에 선언되었다.
+
+## Getter Setter
+
+```java
+class Temp{
+    private int data = 100;
+    public int getData(){
+        return data;
+    }
+    public void SetData(int data) {
+        this.data = data;
+    }
+}
+```
+
+멤버함수는 private을 권장. 값을 읽을 때는 getter 함수를 제작해 쓴다.
+
+인스턴스 내의 변수값을 읽기 전용으로 하려면? getter만 만들어준다.
+
+인스턴스내의 변수값을 바꾸고 싶을때는 setter 를 쓰는것이 예의.
+
+```java
+class Temp{
+    private Object data = null;
+    public Object getData(){
+        return data;
+    }
+    public void setData(Object obj){
+        this.data = obj;
+    }
+}
+```
+
+> Object 클래스의 getter setter
+
+### 주의점
+
+```java
+class Temp{
+    private int data = 100;
+    public int getData(){
+        return data;
+    }
+}
+class Temp2 extends Temp{
+    private int data = 200;
+}
+public class Test048 {
+    public static void main(String[] args) {
+        Temp t = new Temp();
+        System.out.println(t.getData());
+        Temp t2 = new Temp2();
+        System.out.println(t2.getData());
+        Temp2 t3 = new Temp2();
+        System.out.println(t3.getData());
+    }
+}
+```
+
+```
+결과값 : 100 100 100
+```
+
+```java
+class Temp{
+    private int data = 100;
+    public int getData(){
+        return data;
+    }
+}
+class Temp2 extends Temp{
+    private int data = 200;
+    public int getData(){
+        return data;
+    }
+}
+public class Test048 {
+    public static void main(String[] args) {
+        Temp t = new Temp();
+        System.out.println(t.getData());
+        Temp t2 = new Temp2();
+        System.out.println(t2.getData());
+        Temp2 t3 = new Temp2();
+        System.out.println(t3.getData());
+    }
+}
+```
+
+```
+결과값 : 100 200 200
+```
+
+## String 클래스
+
+```java
+public class Test048 {
+    public static void main(String[] args) {
+        String t = "HelloWorld";
+        String t2 = "HelloWorld";
+        System.out.println(t == t2);
+        System.out.println(t.equals(t2));
+        System.out.println(t.hashCode());
+        System.out.println(t2.hashCode());
+    }
+```
+
+```
+결과값 : true true 439329280 439329280
+```
+
+“”(쌍따옴표) 를 만나면 VM은 StringPool을 뒤져서 없으면 만들고, 있으면 재활용
+
+StringPool을 먼저뒤지고 없으면 만듬
+
+웹 프로그래밍에 매우 유용하다. HTML 내용을 String으로 만들고 재활용 하는 쪽이 메모리 관리에 유용하다.
+
+![stringpool](..\images\stringpool.png)
+
+```java
+public class Test048 {
+    public static void main(String[] args) {
+        String t = "HelloWorld";
+        Object o = "HelloWorld";
+        String  r = (String) o; // <-------
+    }
+}
+```
+
+String으로 캐스팅  
+
+```java
+class Temp{
+    private Object data = null;
+    public Object getData(){
+        return data;
+    }
+    public void setData(Object obj){
+        this.data = obj;
+    }
+}
+class Temp2{
+    private String data = null;
+    public String getData(){
+        return data;
+    }
+    public void setData(String obj){
+        this.data = obj;
+    }
+}
+public class Test048 {
+    public static void main(String[] args) {
+        Temp2 t2 = new Temp2();
+        t2.setData("HelloWorld"); //스트링만 인스턴스로 저장 할 수 있음 (스트링은 상속불가)
+        String l2 = t2.getData();  //casting 불필요
+
+        Temp t = new Temp();
+        t.setData("HelloWorld"); //모든 인스턴스로 저장할 수 있음
+        String l = (String) t.getData();   //캐스팅 필요 
+    }
+}
+```
+
+## Generic
+
+```java
+class Temp< T extends Object>{
+    private T data = null;
+    public T getData(){return data;}
+    public void setData(T data){this.data = data;}
+}
+public class Test048 {
+    public static void main(String[] args) {
+        Temp<String> t = new Temp<String>();
+        t.setData("HelloWorld");
+        System.out.println(t.getData());
+
+        Temp<Object> t2 = new Temp<Object>();
+        t2.setData("HelloWorld");
+        String l2 = (String) t2.getData();
+        System.out.println(t2.getData());
+    }//인스턴스 내부의 자료형을 동적으로 지정할 수있다. : 제네릭
+    //1.5버전부터 지원되었다. < > 안에 지정 가능한 타입은 참조형 변수 타입이어야한다.(자료형 안됨)
+}//c++의 템플레이트가 이거와 같음. 차이점은 C++은 자료형도 <>안에 허용
+//System.out.print로 호출하면 자동으로 toString이 호출되도록 약속되어 있다.
+```
+
+```
+결과값 : HelloWorld HelloWorld
+```
+
+```java
+// Wrapper Class : 자료형 값을 감싸주는 가벼운 클래스
+// int -> Integer 라는 클래스가 있음
+// double -> Double 이라는 클래스 있음
+public class Test054 {
+    public static void main(String[] args) {
+        Object ob = new Integer(100);
+        Object ob2 = new Double(3.14);
+
+        int i = ((Integer) ob).intValue();
+        System.out.println(i);
+
+        double j = ((Double)ob2).doubleValue();
+        System.out.println(j);
+    }
+}
+```
+
+### AutoBoxing
+
+```java
+        Integer i = 100;
+        Object t = 200;
+        System.out.println(i.getClass().getName());
+        System.out.println(t.getClass().getName());
+```
+
+```
+결과값 : java.lang.Integer java.lang.Integer
+```
+
+컴파일러가 `Integer i = new Integer(100);`로 자동바꿈.
+
+값을 Wrapper클래스에 대입하는 코드는 자동으로 인스턴스를 생성해서 값을 감싸줌 이걸 **Auto Boxing**이라고함
+
+`Object t = 200;` Object형 변수에서도 AutoBoxing은 동작함   JDK 1.5에서 추가됨
+
+### AutoUnboxing
+
+```java
+        Integer i = 100;
+        int j = i;  //i.intValue();
+        System.out.println(j);
+```
+
+```
+결과값 : 100
+```
+
+컴파일러가 `Integer i = new Integer(100);` 로 자동바꿈 (Unboxing)
+
+```java
+        Object t = 200;
+        int k = t; <--- 에러남
+```
+
+Object타입으로 오토박싱된 인스턴스는 언박싱 안된다. (t.intValue() 호출할 수 없다.)   JDK 1.5에서 추가됨
+
+### Command Pattern
+
+```java
+interface ICalc{
+    public int execute(int i);
+}
+
+class AddCalc implements ICalc{
+    private int data;
+    public AddCalc(int data) {
+        this.data = data;
+    }
+
+    @Override
+    public int execute(int i) {
+        return i+data;
+    }
+}
+// 빼기를 할떄는 **를 붙여서 프린트 하라고 시키고싶다.
+// 일시적으로 시키고 싶은경우가 있더라.
+//엣날 프로그래머들은 빈 인터페이스를 이럴 때 이용했다.  이것이 @어노테이션
+//쓰임 당하는 입장에서 쓰는 쪽에게 어떤 의견을 제시하는 통로가 필요할 때
+// 아래의 빈 인터페이스를 이용하면 상당히 괜찮다.
+// 이것을 체계화 한 것이 1,5 이후에 도입된 Annotation 개념이 된다.
+interface PrintStarts{} //어노테이션 인터페이스의 조상뻘 개념
+class MinusCalc implements ICalc, PrintStarts{
+    private int data;
+    public MinusCalc(int data) {
+        this.data = data;
+    }
+    @Override
+    public int execute(int i) {
+        return i-data;
+    }
+}
+public class Test054 {
+    public static void main(String[] args) {
+        ICalc i = new AddCalc(3);
+        int r = 5;
+        r = i.execute(r);
+        System.out.println(r);
+
+        ICalc[] ls = new ICalc[5];
+        ls[0] = new AddCalc(2);
+        ls[1] = new MinusCalc(3);
+        ls[2] = new AddCalc(6);
+        ls[3] = new MinusCalc(1);
+        ls[4] = new AddCalc(7);
+
+        int y = 10;
+        for (int j = 0; j < ls.length; j++) {
+            y = ls[j].execute(y);
+            if(ls[j]instanceof PrintStarts){
+                System.out.print("**");
+            }
+            System.out.println(y);
+        }
+    }
+}
+/*
+일반적으로 자료값은 변수로, 동작은 함수로 만든다.
+동작을 하나의 인스턴스로  수행하게 하는 경우가 있다.
+- 이런 설계기법을 Command Pattern이라고 한다.
+리스트같은데 인스턴스들을 저장하여 매크로처럼 사용 할 수 있다.
+ */
+```
+
+> 어노테이션 기반이 된 빈 인터페이스
+
+### Build
+
+```java
+class Temp1{
+    int data = 0;
+    // 아래 코드의 t와 this가 가리키는 대상은 같다.
+    // 따라서 t.add(10)은 10을 더한 후에 t로 바꿔 쓸 수 있다.
+    // StringBuffer의 append에서 볼 수 있다.
+    Temp1 add (int i){
+        data += i;
+        return this;
+    }
+}
+public class Test057 {
+    public static void main(String[] args) {
+        Temp1 t = new Temp1();
+        t.add(10).add(10).add(100);
+        System.out.println(t.data);
+    }
+}
+
+```
+
+```
+결과값 : 120
+```
+
+
+
+## StringBuffer Class
+
+```java
+public class Test057 {                                   
+    public static void main(String[] args) {         
+        StringBuffer sb = new StringBuffer();             
+        sb.append("apple");       
+        sb.append("banana");        
+        String l = sb.toString();       
+        System.out.println(l);                                                                       
+        System.out.println("apple" + "banana");         
+    }                     
+}                            
+```
+
+```
+결과값 : applebanana applebanana
+```
+
+`System.out.println("apple" + "banana");  ` 코드는 컴파일러가 `new StringBuffer().append("apple").append("banana").tosString ` 방식으로 동작시키므로 메모리 효율이 매우 떨어짐 아래코드는 한 줄 마다 new StringBuffer가 동작하지만 위의코드는 한번만 동작.
+
+#### String vs StringBuffer Test
+
+```java
+public class Test057 {
+    public static void main(String[] args) {
+        long start = System.currentTimeMillis();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < 100000; i++) {
+            sb.append("apple");
+        }
+        long end = System.currentTimeMillis();
+        System.out.println(end - start);
+        start = System.currentTimeMillis();
+        String st = new String("");
+        for (int i = 0; i < 100000; i++) {
+            st += "apple";
+        }
+        end = System.currentTimeMillis();
+        System.out.println(end - start);
+    }
+}
+```
+
+```
+결과값 : 8  11645
+```
+
+`java -verbosegc Test057` 통해 가비지 콜렉터 과정을 볼 수 있음
+
+메모리가 부족할 때 메모리를 비우고 확보하는 일을 모니터링 하게 된다.
+
+이런 방법으로도 확인 가능
+
+## String
+
+### substring();
+
+```java
+        String l = "HelloWorld";
+        System.out.println(l.substring(2,5));
+```
+
+```
+결과값 : llo
+```
+
+### indexOf();
+
+```java
+        String l = "HelloWorld";
+        System.out.println(l.indexOf("or"));
+```
+
+```
+결과값 : 6
+```
+
+> 만약 없는 문자열을 찾을때는 -1을 리턴한다.
+>
+> 문자열 안의 부분 문자열의 위치를 리턴 : 여기서는 6
+
+### startsWith(); / endsWirh();
+
+```java
+	    String l = "HelloWorld";
+        System.out.println(l.startsWith("Hell"));
+        System.out.println(l.endsWith("ld"));
+```
+
+```
+결과값 : true true
+```
+
+> 시작이나 끝 문자열이 매개변수값과 같으면 true 아니면 false
+
+### toCharArray();
+
+```java
+        String l = "HelloWorld";
+        char[] ch = l.toCharArray();
+        for (int i = 0; i < ch.length; i++) {
+            System.out.println(ch[i]);
+        }
+```
+
+```
+결과값 : H e l l o W o r l d
+```
+
+> String을 char 배열로
+
+## 문제
+
+### 배열의 최대값 구하기
+
+```java
+public class Test045 {
+    public static void main(String[] args) {
+        int[] i = new int[]{4,9,6,5};
+        int max = i[0];
+        for (int j = 1; j < i.length; j++) {
+            if(max < i[j]){
+                max = i[j];
+            }
+        }
+        System.out.println(max);
+    }
+}
+```
+
+```
+결과값 : 9
+```
+
+### Generic Linked List
+
+```java
+package node;
+class Node<T>{
+    T data = null;
+    Node<T> next = null;
+    Node(T i, Node<T> n){
+        data = i;
+        next = n;
+    }
+}
+class LinkedList<X>{
+    private Node<X> head = null;
+    private Node<X> tail = null;
+    public LinkedList() {
+        this.head = new Node<>(null, null);
+        this.tail = head;
+    }
+    public LinkedList<X> add(X input){
+        tail.next = new Node<>(input, null);
+        tail = tail.next;
+        return this;
+    }
+    public void print(){
+        for(Node<X> n = head.next; n != null; n = n.next){
+            System.out.println(n.data);
+        }
+    }
+}
+public class MyLinkedList {
+    public static void main(String[] args) {
+        LinkedList<String> ll= new LinkedList<>();
+        ll.add("test").add("this").add("how");
+        ll.print();
+        LinkedList<Integer> l2 = new LinkedList<>();
+        l2.add(3).add(2);
+        l2.print();
+
+    }
+}
+```
+
+### indexOf(); 구현
+
+```java
+package index;
+
+class Finder{
+    public static int indexOf(char[] operand, char[] operator) {
+        int odLenth = operand.length;
+        int otLenth = operator.length;
+        int idx = -1;
+        for (int remainder = odLenth - otLenth;  remainder >= 0; remainder--) {
+            if(operand[remainder] == operator[0]){
+                for(int i=1; otLenth-1 >= i; i++){
+                    if(operand[remainder+i] == operator[i]){
+                        if(i == otLenth-1){
+                            idx = remainder;
+                            break;
+                        }
+                    }else {
+                        break;
+                    }
+                }
+            }
+        }
+        return idx;
+    }
+}
+public class MyIndexOf {
+    public static void main(String[] args) {
+        int idx = Finder.indexOf("Hedoerrdwld".toCharArray(), "sdadsadsadorw".toCharArray());
+        System.out.println(idx);  //String의 indexOf와 동일한 동작을 하도록 만들어 주세요
+    }
+}
+
+```
+
+# Day5
+
+---
+
