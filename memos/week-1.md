@@ -1389,7 +1389,7 @@ public class Test40 {
 ## 복습
 
 + class 
-+ instance
++ instance 
 + 로컬변수 함수가 호출될 때 메모리할당
 + 멤버변수 클래스내에 선언된 변수 인스턴스가 생성될떄 메모리 할당(static이 아닌경우)
 + 매개변수 일종의 로컬변수로 함수호출시 생성
@@ -2048,4 +2048,595 @@ public class MyIndexOf {
 # Day5
 
 ---
+
+## Casting
+
+캐스팅은 되는 경우에만 된다. 그것을 미리 알아보는것은 `instanceof` 키워드를 이용해서 알 수 있다.
+
+### Casting Error
+
+```java
+class A{
+}
+class B extends A {
+    public void print() {
+        System.out.println(100);
+    }
+}
+public class Test061 {
+    public static void main(String[] args) {
+        A t= new A();
+        if*
+        B t2 = (B) t;
+        t2.print();
+    }
+}
+```
+
+```
+결과값 : Exception in thread "main" java.lang.ClassCastException: javaclass.A cannot be cast to javaclass.B at javaclass.Test061.main(Test061.java:16)
+```
+
+> t가 가르키고있는 B라는 인스턴스가 존재해야만 캐스팅이 가능해짐
+
+### instanceof
+
+```java
+        A t= new A();
+        //(B)t 이것이 가능하면 true/ 아니면 false
+        if (t instanceof B){
+            B t2 = (B) t;
+            t2.print();    
+        }
+```
+
+> `instanceof`키워드를 이용하여 캐스팅에러 미리 방지가능
+
+## Boolean
+
+비교연산 boolean 값을 리턴 : == != > < >= <=
+
+거의 모든 연산은 같은 자료형끼리 가능
+
+```java
+public class Test061 {
+    public static void main(String[] args) {
+       boolean i = true;
+       boolean j = false;
+        System.out.println(10 < 5);
+        System.out.println(10 / 3); // 나머지를 뺀 몫이 나옴
+        System.out.println(10 % 3); //나머지를 구하는 연산자
+        System.out.println(10.0 / 3);
+        System.out.println(3.33333333 * 3 == 10.0);
+        System.out.println(3.3333333333333335 * 3== 10.0); //Double 연산은 값을 보장할 수없다. 오차발생
+    }// c는 정수값 0 은 false, 0이아닌 모든 정수는 true
+}// if(100)참
+```
+
+```
+결과값 : false 3 1 3.3333333333333335 false true
+```
+
+> `10.0/3`  과같이 무한소수에서 오차조금씩 발생해서 double간의 연산의 비교는 정확하지 않을수도 있다.
+
+## Package
+
+```java
+package javaclass;
+
+public class Test061 {
+ public int print(){
+     return 200;
+ }   
+ public int print2(int i ){
+     return 300 * i;
+ }
+ public static int print3(){
+     return 100;
+ }// 패키지가 지정된 클래스 컴파일 : javac -d [폴더위치] Test061.java
+}
+```
+
+패키지는 클래스의 묶음. 파일 맨 위에 지정 .
+
+이 파일안에 선언한 모든 클래스는 지정된 패키지에 속한다.
+
+> javac -d . Test061.java
+>
+> 대상폴더아래 패키지이름으로 폴더생기고, 그 아래에 class파일이 들어간다.
+
++ 패키지를 지정하지 않으면 Unnamed 패키지에 소속되고, 이건 사용시 제약이 많다.
+
+### Import
+
+```java
+package practice;
+
+import javaclass.Test061;
+
+public class Test064 {
+    public static void main(String[] args) {
+        Test061 t = new Test061();
+        t.print();
+    }
+}
+```
+
+다른 패키지의 클래스는 반드시 명시해야한다. import
+
+만일 그래도 못찾으면 class를 명시해야한다. `javac -classpath C:\A\ Test061.java`
+
+실행은  `java -classpath .;C:\A\ Test061`  현재폴더 명시해줘야함
+
+-classpath 옵션을 안주면 -classpath .  이 자동으로 붙는다.
+
+Test 061A의 멤버변수가 접근되는지 살펴본다 : protected, friendly(default)  -> 다른패키지에서 접근 x
+
+
+
+Static한건 클래스가 로딩될떄 메모리에 할당 non-Static한건 인스턴스가 생성될떄 메모리에 할당
+
+클래스로딩은 딱한번만일어나므로 Static한건 딱 한개만 존재함
+
+Static Initializer는 클래스가 로딩되는 시점에 실행되고 클래스를 강제로 로딩하려면 Class.forName("클래스명");함수를 이용한다. 
+
+```java
+package temp;
+
+public class Test066A{
+	//static initializer라 한다. 클래스가 로딩되는 시점에 호출됩니다.
+	static{
+		System.out.println("Test066A loaded");
+	}
+	public int print(){return 200;}
+	public int print2(int i){return 300*i;}
+	public static int print3(){return 100;}
+} // C:\a\ 아래에 컴파일하자. javac -d c:\A\ Test066A.java
+```
+
+```java
+public class Test066{
+	public static void main(String[] args) throws Exception{
+		//클래스를 찾아내서 해당 클래스를 강제로 메모리에 로딩시킨다.
+		//찾아낸 코드의 static initializer가 동작하게됨
+		Class<?> cls = Class.forName("temp.Test066A");
+		/* Class : 로딩된 클래스의 관리자 역할을한다.
+		   cls.newInstance() : cls가 관리하는 temp.Test066A의 인스턴스를 생성한다.
+		   obj.getClass().getName() : obj가 가리키는 인스턴스를 생성시킨 클래스 명 //임포트없이도 다른 패			 키지의 인스턴스를 생성 할 수 있음
+		*/
+		Object obj = cls.newInstance(); //new를 쓰지않고 인스턴스를 만드는방법
+
+		System.out.println( obj.getClass().getName());
+	}
+}
+```
+
+```java
+import java.lang.reflect.Method;
+
+public class Test066_2{
+    public static void main(String[] args) throws Exception{
+     Class<?> cls = Class.forName("temp.Test066A");
+     Object obj = cls.newInstance();
+
+     /* getMethods() : 클래스안에서 선언된 함수에 대한 포인터들을 추출한다.
+     
+      */
+     Method[] mtds = cls.getMethods(); //함수 포인터
+        for (int i = 0; i < mtds.length; i++) {
+            System.out.println(mtds[i]);
+        }
+    }
+}
+```
+
+```java
+결과값 : Test066A loaded
+public int temp.Test066A.print()
+public int temp.Test066A.print2(int)
+public static int temp.Test066A.print3()
+public final void java.lang.Object.wait() throws java.lang.InterruptedException
+public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+public final native void java.lang.Object.wait(long) throws java.lang.InterruptedException
+public boolean java.lang.Object.equals(java.lang.Object)
+public java.lang.String java.lang.Object.toString()
+public native int java.lang.Object.hashCode()
+public final native java.lang.Class java.lang.Object.getClass()
+public final native void java.lang.Object.notify()
+public final native void java.lang.Object.notifyAll()
+```
+
+	> 모든 메서드를 찾는다.
+
+```java
+package javaclass;
+
+import java.lang.reflect.Method;
+
+public class Test066_3 {
+    public static void main(String[] args) throws Exception{
+        Class<?> cls = Class.forName("temp.Test066A");
+        Object obj = cls.newInstance();
+// Method는 C의 함수포인터의 역할을 한다.
+//        cls.getMethods()는 모든 멤버함수의 포인터를 넘긴다.
+//        cls.getMethod(...) : 단하나의 멤버함수의 포인터를 넘기다.
+//        ...에는 함수이름, 매개뱐수의 형태를 명시한다.
+//       Method mtd = cls.getMethod("print");
+        Method mtd = cls.getMethod("print2", int.class);
+        System.out.println(mtd);
+        Object r = mtd.invoke(obj, 20);
+        System.out.println(((Integer)r).intValue());
+    }
+}
+
+```
+
+```java
+결과값 : Test066A loaded
+public int temp.Test066A.print2(int)
+6000
+```
+
+```java
+package javaclass;
+
+import java.lang.reflect.Method;
+
+public class Test066_3 {
+    public static void main(String[] args) throws Exception{
+        Class<?> cls = Class.forName("temp.Test066A");
+//        Object obj = cls.newInstance();
+// Method는 C의 함수포인터의 역할을 한다.
+//        cls.getMethods()는 모든 멤버함수의 포인터를 넘긴다.
+//        cls.getMethod(...) : 단하나의 멤버함수의 포인터를 넘기다.
+//        ...에는 함수이름, 매개뱐수의 형태를 명시한다.
+//       Method mtd = cls.getMethod("print");
+        Method mtd = cls.getMethod("print3");
+        System.out.println(mtd);
+        Object r = mtd.invoke(cls);
+        System.out.println(((Integer)r).intValue());
+    }
+}
+
+```
+
+```
+결과값 : Test066A loaded
+public static int temp.Test066A.print3()
+100
+```
+
+> Static은 인스턴스 없어도 잘됨
+
+
+
+## @annotation
+
+```java
+package temp;
+
+public class Test067 {
+    @PrintStars
+    public int print(){
+        return 100;
+    }
+}// javac -d C:\a\ -classpath C;\A\ Test067.java  -> import할 파일 위치
+
+```
+
+```java
+package temp;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PrintStars {
+}
+
+```
+
+```java
+package javaclass;
+
+import temp.PrintStars;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
+public class Test067_2 {
+    public static void main(String[] args) throws Exception {
+        Class<?> cls = Class.forName("temp.Test067");
+        Object obj = cls.newInstance();
+        Method mtd = cls.getMethod("print");
+        Annotation anot = mtd.getAnnotation(PrintStars.class);
+        Object r= mtd.invoke(obj);
+        if(anot.toString().equals("@temp.PrintStars()")){
+            System.out.println("**");
+        }
+        System.out.println(((Integer)r).intValue());
+        System.out.println(anot);
+        System.out.println(mtd);
+    }
+}// javac Test067_2.java 컴파일시
+//java -classpath C:\A\;. Test067_2     //내가 실행시킬 위치는 뒤  불러올거는 클래스패스 뒤, 여러개 불러올거면 ;로구분
+
+```
+
+```
+결과값 : **
+100
+@temp.PrintStars()
+public int temp.Test067.print()
+```
+
+## java.util.*
+
+### List
+
+```java
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+//ArrayList 속도가 빠르다. 내부적으로 배열을 사용
+//배열을 사용하기때문에 속도는 빠른데, 중간중간 삭제가일어나면 비효율적이다.
+//LinkedList Node를 이용하기에 단순하게 쌓는 속도는 느리다.
+//중간에 추가 삭제가 빈번한 경우에는 용이하다.
+// 둘 다 List를 상속한다. List를 상속받은 클래스는 특징이 존재한다.
+// - 중복되는 걸 허용한다.검색시에 들어간 순서대로 나온다.(순서대로 보관한다.)->스택이나 큐 만드는데 용이하다.
+public class Test068 {
+    public static void main(String[] args) {
+        List<String> l = new LinkedList<>();
+        l.add("apple");
+        l.add("banana");
+        l.add("orange");
+        l.add("kiwi");
+
+        for (String t : l) {
+            System.out.println(t);
+        }
+    }
+}
+```
+
+```
+결과값 : apple banana orange kiwi
+```
+
+### Set
+
+```java
+package javaclass;
+
+import java.util.Set;
+import java.util.TreeSet;
+// Set 인터페이스를 상속받은 것 : TreeSet, HashSet
+// 공통특징 : 순서 개념이 없다. 중복을 허용하지 않는다.
+// 저장할때 용이 -> 검색속도가 List보다 월등함
+// TreeSet : 트리를 이용하여 보관, HashSet은 Hash알고리즘을 이용
+public class Test069 {
+    public static void main(String[] args) {
+        Set<String> l = new TreeSet<>();
+        l.add("apple");
+        l.add("banana");
+        l.add("orange");
+        l.add("kiwi");
+        l.add("apple"); //중복된값
+
+        for (String t : l) {
+            System.out.println(t);
+        }
+    }
+}
+```
+
+```
+결과값 : banana orange apple kiwi
+```
+
+향상된 for문의 표준 검색방법
+
+```java
+Iterator<String> it = l.iterator();
+        while (it.hasNext()) {
+            String next =  it.next();
+            System.out.println(next);
+        }
+```
+
+```java
+package javaclass;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+// Set 인터페이스를 상속받은 것 : TreeSet, HashSet
+// 공통특징 : 순서 개념이 없다. 중복을 허용하지 않는다.
+// 저장할때 용이 -> 검색속도가 List보다 월등함
+// TreeSet : 트리를 이용하여 보관, HashSet은 Hash알고리즘을 이용
+public class Test069 {
+    public static void main(String[] args) {
+        Set<String> l = new HashSet<>();
+        l.add("apple");
+        l.add("banana");
+        l.add("orange");
+        l.add("kiwi");
+        l.add("apple"); //중복된값
+
+        Iterator<String> it = l.iterator();
+        while (it.hasNext()) {
+            String next =  it.next();
+            if(next.indexOf("an") != -1){
+                it.remove();
+            }
+            System.out.println(next);
+        }
+    }
+}
+```
+
+> iterator를 이용한 삭제
+
+### Map
+
+```java
+package javaclass;
+
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+//map도 순서개념이 없으며 반드시 key = value 형태로 저장되야함 사전과 같은 형태
+//put에 함수로 저장, get 함수로 key에 해당하ㅏ는 value를 뽑아낸다.
+//list, Set, Map 형태로 뭔가 저장하는 형태를 흔히 Collection이라고 한다.
+public class Test070 {
+    public static void main(String[] args) {
+        Map<String, String> map = new Hashtable<>();
+        map.put("apple", "사과");
+        map.put("banana", "바나나") ;
+        map.put("orange", "오렌지") ;
+        map.put("kiwi", "키위") ;
+        map.put("banana", "브내으너") ;
+
+         String value = map.get("apple");
+        System.out.println(value);
+
+        Set<String> keys = map.keySet();
+        Iterator<String> it = keys.iterator();
+        while (it.hasNext()) {
+            String next = it.next();
+            String v = map.get(next);
+            System.out.println(next+ ", " + v);
+        }
+
+        System.out.println(map);
+    }
+}
+
+```
+
+```
+결과값 : 사과
+banana, 브내으너
+apple, 사과
+orange, 오렌지
+kiwi, 키위
+{banana=브내으너, apple=사과, orange=오렌지, kiwi=키위}
+```
+
+### Math.random();
+
+```java
+package javaclass;
+
+public class Test071 {
+    public static void main(String[] args) {
+        for (int i = 0; i < 20; i++) {
+            double d = Math.random(); // 0부터 1까지의 소수값을 랜덤하게 출력한다.
+
+            int a = (int) (d * 100); // 0~100까지
+            System.out.println(a);
+        }
+    }
+}
+```
+
+### Throw
+
+```java
+package javaclass;
+
+class TempException extends RuntimeException{}
+//자바에서 각종 에러는 class로 구현된다.
+//코드 수행시 에러가 발생되면 해당 예외클래스의 인스턴스를 throw 해버린다.
+//예외는 함수 수행시에 발생되고, 함수에 그 사실을 명시한다.
+public class Test074{
+    public static void main(String[] args) {
+        int i = 0;
+        if(i==0){
+            throw new TempException();
+        }
+        System.out.println(0);
+    }
+}
+```
+
+```java
+package javaclass;
+
+//연료 고갈이라는 에러를 클래스로 명시
+class FuelException extends Exception{}
+// Exception이 깐깐하다 : 컴파일이 안된다....
+// 함수 안에서 에러가 발생 할 수 있다면 그 사실을 선언부에 명시해야 컴파일된다.
+public class Test074{
+    public void carDrive(int fuel) throws FuelException{ //thorws로 연료고갈이 생길수 있음을 명시
+        if(fuel == 0){
+            throw new FuelException();
+        }
+        System.out.println("gogo");
+    }
+    public static void main(String[] args) {
+        Test074 t = new Test074();
+        //throws FuelException으로 선언된 함수를 호출할 때는 반드시 에러가 발생할 수 이는 영역을 try{...}로 감싸준다.
+        //try에는 반드시 1개이상의 catch가 있어야한다.
+        //에러가 발생되면 에러 인스턴스를 throw한다.
+        //catch(FuelException e)에 있는 e 변수가 발생된 에러 인스턴스를 가리 킬 수 있으면 catch에 딸린{...} 영역이 동작한다.
+        //...에는 에러를 수습 할 수 있는 코드가 들어가는것이 바람직하다.
+        //catch (Exception e)써도 됨 상속받기 떄문에 
+        try {
+            t.carDrive(100);
+        } catch (FuelException e) {
+            System.out.println("견인차를 불러라");
+        }
+    }
+}
+```
+
+```java
+package javaclass;
+
+class FuelException extends Exception{
+    public void solve(){
+        System.out.println("견인차를 불러라");
+        //에러 처리
+    }
+}
+public class Test074{
+    public void carDrive(int fuel) throws FuelException{ 
+        if(fuel == 0){
+            throw new FuelException();
+        }
+        System.out.println("gogo");
+    }
+    public static void main(String[] args) {
+        Test074 t = new Test074();
+        try {
+            t.carDrive(100);
+        } catch (FuelException e) {
+            e.solve();
+        }
+    }
+}
+```
+
+
+
+## 문제
+
+```java
+package javaclass;
+
+// 2가지 이상의 다른 방법으로 구현 1가지는 collection 금지
+public class Test072_HW {
+    public static void main(String[] args) {
+        int[] rl = HW.randomArray(10);
+        for (int i = 0; i < rl.length; i++) {
+            System.out.println(rl[i]);
+
+        }
+    }
+}
+```
 
