@@ -2625,17 +2625,101 @@ public class Test074{
 
 ## 문제
 
-```java
-package javaclass;
+### 복권뽑기 1
 
+```java
+public static int[] randomArray(int i, int max) {
+        Set<Integer> si = new HashSet<>();
+        while(si.size() < i){
+            si.add((int)(Math.random()* max));
+        }
+        Object[] arr = si.toArray();
+        int[] result = new int[i];
+        int start = 0;
+        for(Object obj : arr){
+            result[start] = (int) obj;
+            start++;
+        }
+        return result;
+    }
+```
+
+### 복권뽑기2
+
+```java
+   public static int[] randomArray2(int i, int max){
+        int[] total = new int[max+1];
+        int[] result = new int[i];
+        for (int j = 0; j <= max; j++) {
+            total[j] = 0;
+        }
+        int counter =0;
+        while (counter < i) {
+            int rand = (int) (Math.random() * max);
+            if(total[rand] == 0){
+                result[counter] = rand;
+                counter ++;
+                total[rand] = 1;
+            }
+        }
+        return result;
+    }
+```
+
+### 리스트 출력
+
+``` java
+    public static String collectionString(List<String> ls) {
+        String result;
+        if(ls.isEmpty()){
+            return "[]";
+        }else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            int start= 1;
+            int end = ls.size();
+            for(String t : ls){
+                sb.append("'");
+                sb.append(t);
+                sb.append("'");
+                if(start == 1 && end ==1){
+                    start++;
+                    continue;
+                }
+                start++;
+                if(start > end) {
+                    break;
+                }else {
+                    sb.append(",");
+                }
+            }
+            sb.append("]");
+           result = sb.toString();
+        }
+        return result;
+    }
+}
+```
+
+### 출력부
+
+```java
 // 2가지 이상의 다른 방법으로 구현 1가지는 collection 금지
 public class Test072_HW {
     public static void main(String[] args) {
-        int[] rl = HW.randomArray(10);
-        for (int i = 0; i < rl.length; i++) {
-            System.out.println(rl[i]);
 
+        int[] rl = HW.randomArray2(10, 100);
+        for (int i = 0; i < rl.length; i++) {
+        System.out.println(rl[i]);
         }
+
+        List<String> ls = new ArrayList<>();
+        ls.add("apple");
+        ls.add("banana");
+        ls.add("orange");
+        ls.add("kiwi");
+        String l = HW.collectionString(ls);
+        System.out.println(l);
     }
 }
 ```
