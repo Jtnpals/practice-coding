@@ -582,3 +582,703 @@ public class Client {
 
 ```
 
+# Day2
+
+---
+
+```java
+package javaclass;
+
+public class Test092 {
+    public static void main(String[] args) {
+        String l = "HelloWorld";
+        String r = "HelloWorld";
+        String t = l.substring( 2, 5);  //""들어간거는 pool에 들어가지만 ""로안들어간다. 포인터 비교가 가능
+        // 그 외의 경우 (substirng 등등)은 Pool 을 쓴다는 보장이 없다
+        // - 그 때는 equals로 비교한다.
+
+        System.out.println( r == l);
+        System.out.println(  "llo" == t);
+        System.out.println( "llo".equals(t));
+
+        //문자열을 숫자로 변환시에 : Double.parseDouble 이용
+        int r2 = Integer.parseInt("100");
+        System.out.println( r2 == 100);
+
+        
+        //메모리를 적게 먹음 , 하나있는 경우에는 이방법이 낫다.
+        String tl =  "10101,100";
+        int idx = tl.indexOf(",");
+        System.out.println(tl.substring(tl.indexOf(",")));
+        System.out.println(tl.substring(0, 5));//5위치부터 끝까지
+        System.out.println(tl.substring(6));
+                
+        
+        //메모리를 많이먹음, 가 여러개있는 경우에는 이방법이 편하다.
+        String[] ls = tl.split(",");
+        System.out.println(ls[0] + " " + ls[1]);
+    }
+}
+
+```
+
+## Mysql
+
+```mysql
+show database;
+```
+
+> 데이터베이스 보여줌
+
+```mysql
+create database study;
+```
+
+> 데db 만듬
+
+```mysql
+use study;
+```
+
+> 만든데이터 베이스로
+
+```mysql
+create table study01t(
+	id int       not null,
+    score tinyint not null
+);
+```
+
+> not null 옵션의 id와 score 컬럼이있는 테이블 생성
+
+```mysql
+drop talble study01t
+```
+
+> 테이블 삭제
+
+```mysql
+insert into study01t values (10101, 100);
+insert into study01t values (10102, 90);
+```
+
+> 테이블에 값 추가
+
+```mysql
+SELECT * FROM study.study01t;
+```
+
+> 테이블 조회
+
+```mysql
+insert into study01t (score, id) values  (90, 10104);
+```
+
+	> 테이블에 컬럼값으로 삽입
+
+테이블에 있어야 하는 개념
+
+
+
+1. 필드(Field) - 컬럼  : 자료형을 지정한다 (int, tinyint), 같은자료형의, 같은 의미의 값이 와야한다.
+
+2. 레코드(Record) - Row : 입력의 단위  - 데이터들이 연관되어지는 묶음이어야 한다.
+
+   이 두가지 개념이 있어야 테이블이라 할 수 있다.
+
+```mysql
+delete from study01t where id = 10101;
+```
+
+> where 값이 10101;인 레코드 지음
+
+```mysql
+delete from study01t where id < 10109;
+```
+
+> ​	where 조건을 만족하는 값들 전부지움
+
+```mysql
+delete from study01t;
+```
+
+> 전부지움
+
+```mysql
+delete from stud01t where 0 = 1;
+```
+
+> 에러 안남 - 그리고 지우지도않음
+
+```java
+delete from stud01t where 1 = 1;
+```
+
+> 전부 지움
+
+tinyint : 1byte
+
+int : 4byte
+
+```mysql
+update study01t set score = 110 where id = 10101;
+```
+
+> where 조건을 만족하는것에대하여 set을 동작
+
+```mysql
+update study01t set score = socre-10 where id = 10101;
+```
+
+​	> 기존의 값을 활용해서 만들 수 있다.
+
+```mysql
+update study01t set score = id - 10000 where id = 10101;
+```
+
+```mysql
+update study01t set score = id - 10000 where id != 10101;
+```
+
+> 같은 레코드의 값을 이용해서 사용하게됨
+
+```mysql
+update study01t set id = 0, score = 0 where id = 10101;
+```
+
+> 2개이상의 Data를 동시에 수정
+
+where 문장 delete, update, select와 연동
+
+```mysql
+select * from study01t where id != 10102;
+```
+
+> 10102가아니년석 보여줘
+
+```mysql
+select id from study01t where id != 10102;
+```
+
+> 특정 필드만 보여줄때
+
+```java
+select score, id from study01t where id != 10102;
+```
+
+> 스코어 아이디 컬럼순서대로 보여줘
+
+```mysql
+select score + 5, id from study01t where id != 10102;
+```
+
+> select는 데이터를 가옹해서 보여 줄 수 있다.
+
+```mysql
+SELECT score + 5 as sungjuk, id FROM study01t;
+```
+
+> 컬럼명을 바꾸어서 출력이 가능하다. (보여지는거만 바꾸었다. 이름바뀐거 아님)
+
+```mysql
+select score, score as sungjuk from study01t;
+```
+
+> 하나의 컬럼을 여러변 출력해도 무방하다.
+
+### 실습준비
+
+```mysql
+CREATE TABLE StudentT(
+	stId CHAR(5),
+	name VARCHAR(9),
+	addr VARCHAR(9)
+);
+
+INSERT INTO StudentT VALUES('10101','홍길동','역삼동');
+INSERT INTO StudentT VALUES('10102','고길동','개포동');
+INSERT INTO StudentT VALUES('10103','이기자','역삼동');
+INSERT INTO StudentT VALUES('10104','박기자','한남동');
+INSERT INTO StudentT VALUES('10105','김영삼','홍제동');
+INSERT INTO StudentT VALUES('10106','김대중','한남동');
+
+CREATE TABLE SubjectT(
+	subId   CHAR(4), 
+	name   VARCHAR(9) 
+);
+
+INSERT INTO SubjectT VALUES ('KOR1','국어1');
+INSERT INTO SubjectT VALUES ('ENG1','영어1');
+INSERT INTO SubjectT VALUES ('MAT1','수학1');
+
+CREATE TABLE ScoreT(
+	stId  CHAR(5),
+	subId CHAR(4), 
+	score TINYINT
+);
+
+INSERT INTO ScoreT VALUES('10101','KOR1',60);
+INSERT INTO ScoreT VALUES('10101','ENG1',80);
+INSERT INTO ScoreT VALUES('10101','MAT1',90);
+
+INSERT INTO ScoreT VALUES('10102','KOR1',90);
+INSERT INTO ScoreT VALUES('10102','MAT1',90);
+INSERT INTO ScoreT VALUES('10102','ENG1',100);
+
+INSERT INTO ScoreT VALUES('10103','KOR1',70);
+INSERT INTO ScoreT VALUES('10104','KOR1',80);
+INSERT INTO ScoreT VALUES('10105','KOR1',50);
+INSERT INTO ScoreT VALUES('10106','KOR1',60);
+
+INSERT INTO ScoreT VALUES('10103','ENG1',90);
+INSERT INTO ScoreT VALUES('10104','ENG1',70);
+INSERT INTO ScoreT VALUES('10105','ENG1',60);
+INSERT INTO ScoreT VALUES('10106','ENG1',80);
+
+INSERT INTO ScoreT VALUES('10103','MAT1',70);
+INSERT INTO ScoreT VALUES('10104','MAT1',70);
+INSERT INTO ScoreT VALUES('10105','MAT1',80);
+INSERT INTO ScoreT VALUES('10106','MAT1',60);
+
+CREATE TABLE Score2T (
+	stId CHAR(5),
+	name VARCHAR(9),
+	addr VARCHAR(9),
+	kor1 TINYINT,
+	eng1 TINYINT,
+	mat1 TINYINT
+);
+
+INSERT INTO Score2T VALUES('10101','홍길동','역삼동',60,80,90);
+INSERT INTO Score2T VALUES('10102','고길동','개포동',90,90,100);
+INSERT INTO Score2T VALUES('10103','이기자','역삼동',70,90,70);
+INSERT INTO Score2T VALUES('10104','박기자','한남동',80,70,70);
+INSERT INTO Score2T VALUES('10105','김영삼','홍제동',50,60,80);
+INSERT INTO Score2T VALUES('10106','김대중','한남동',60,80,60);
+```
+
+```mysql
+create table study02t(
+id char(5) not null,
+name varchar(10) null
+);
+
+insert into study02t values('a0001', 'abcd');
+insert into study02t values('a0001', 'abcddasdskdsajdk'); --너무 길어서 에러남
+insert into study02t values('a00', 'apple');
+```
+
+문자열 : ''로 감싼다. char or varchar 자료형
+
+char : 고정길이 문자열 `char(5)` (5글자만 들어감) (학번 주민번호 ...) (빈자리는 스페이스 채움) 3자리써도 5자리씀
+
+varchar: 가변길이 문자열 varchar(10) (10자리까지 들어간다.) 3자리쓰면 3자리씀
+
+둘다 최대길이를 넘게 쓸 수 없다.
+
+char가 처리속도가 훨씬 빠름
+
+
+
+### concat
+
+```mysql
+select concat(id, '*') from study02t;
+```
+
+```
+mysql > a0001*
+oracle > a01    *      --'a01   '  'a0001' 'a0001 ' char(5)형태시 이렇게 고정길이
+```
+
+> mysql 문자열 붙이기
+
+
+
+### select
+
+```mysql
+SELECT * FROM study.studentt where addr = '역삼동';
+```
+
+> 역삼동에 사는 학생 출력
+
+```mysql
+SELECT * FROM study.studentt where addr like '역%';
+```
+
+> 역으로시작하는 문자로 사는 학생출력
+
+```mysql
+SELECT * FROM study.studentt where addr like '%삼동';
+```
+
+> 삼동으로 끝나는것
+
+```mysql
+SELECT * FROM study.studentt where addr like '%포%';
+```
+
+> 포가 들어간 동에 사는 친구
+
+### substirng
+
+```mysql
+SELECT substr(addr, 1, 2) FROM study.studentt
+```
+
+> 부분문자열 추출
+
+```mysql
+SELECT * FROM study.studentt where substr(addr, 1,2) = '역삼';
+```
+
+```mysql
+select length(addr) from studentt;
+```
+
+```
+> 9
+```
+
+글자 길이. utf-8인 경우는 한글은 3바이트
+
+## aggregate functions : 5가지
+
+==min	max	count	avg	sum== 외워두자
+
+유일한 결과를 출력하는 성격이 있다.
+
+```mysql
+select min(score) from scoret where subid = 'KOR1';
+```
+
+```
+> 50
+```
+
+> 50이 여러개라도 50이 하나
+
+```mysql
+select avg(score) from scoret where stId = '10101';
+```
+
+> 10101 학생의 평균 성적
+
+```mysql
+select * from scoret where subId = 'MAT1' and (score=60 or score=80);
+```
+
+> 수학에서 60, 80점 받은 학새은 ( or, 괄호)   +++ 필드명 윈도우에서는 대소문자 안가림 (리눅스에서는 가림)
+
+```mysql
+select * from scoret where subid = 'MAT1' and score in (60, 80);
+```
+
+> 이렇게써도됨
+
+```mysql
+select count(*) from scoret where subid = 'MAT1' and score in (60, 80);
+```
+
+> 결과 레코드의 개수를 count(*)로 알 수 있다.
+
+studentt, subjectt, scoret는 얽혀있다.
+
+'여러개의 테이블이 연관관계를 가지고 데이터 베이스를 구성'
+
+```mysql
+select * from studentt where addr like '%역삼%';
+select * from scoret where subid ='KOR1' and stid in('10101','10103');
+select * from scoret where subid ='KOR1' and stid in(select * from studentt where addr like '%역삼%');
+```
+
+여러개 나오는 결과를 이용할 때는 IN 또는  NOT IN을 사용한다.
+
+하나의 쿼리의 결과를 이용해 다음쿼리를 돌리는걸 sub query라고 한다.
+
+```mysql
+select  avg(score) from scoret where subid ='KOR1';
+select * from scoret where subid='KOR1' and score <= (select avg(score) from scoret where subid ='KOR1');
+```
+
+평균점수이하의 점수를 받은 사람들출력
+
+유일한 서브쿼리 결과와의 비교는 = != < <= > >= 을 쓴다.
+
+서브쿼리는 반드시 괄호로 묶어주어야 한다.
+
+```mysql
+select stid from studentt where name like '김%';
+select avg(score) from scoret where subid='MAT1' and stid in(select stid from studentt where name like '김%');
+```
+
+> 김씨성을가진 학생들의 수학성적평균
+
+```mysql
+update scoret set score = score-5 where subid = 'ENG1' and  stid in (select stid from scoret where subid ='ENG1' and score<=70);
+```
+
+> 에러남 아래처럼 짜줘야함 왜냐하면
+
+```mysql
+update scoret set score = score-5 where subid = 'ENG1' and  stid in (select * from(select stid from scoret where subid ='ENG1' and score<=70) as X);
+```
+
+>  mysql 에서 자기자신을 select하면서 update하는것은 안되기 떄문에 이렇게 해줘야함 oracle은 됨
+
+"AGGREGATE FUCTION은 GROUP BY, HAVING과 연동된다."
+
+```mysql
+select stid, avg(score) from scoret group by stid;
+```
+
+| 10101 | 76.6667 |
+| ----- | ------- |
+| 10102 | 93.3333 |
+| 10103 | 76.6667 |
+| 10104 | 73.3333 |
+| 10105 | 63.3333 |
+| 10106 | 66.6667 |
+
+stid에 동일한 값을 가진 레코드를 짜매어서 평균낸 결과.
+
+group by를 썼을때는 group by에 지정된 컬럼만 select 절에 와야한다.
+
+
+
+평균 처리 75이하의 학생
+
+```mysql
+select stid, avg(score) from scoret group by stid where avg(score) <= 75;
+```
+
+이걸로 될거같지만 avg보다 where가 먼저 실행되므로 에러가남
+
+where은 Aggregate function보다 먼저 수행됨
+
+때문에 having 은 통계 처리 이후에 동작한다. 때문에 가능
+
+```mysql
+select stid, avg(score) from scoret  group by stid having avg(score) <= 75;
+```
+
+서브쿼리는 크게 3종류로 나뉜다.
+
+1. Where절의 서브쿼리
+2. from 절의 서브쿼리( inline view)
+3. select절의 서브쿼리(엄청난 결과 & 엄청난 부담)
+
+### from 절의 서브쿼리
+
+select 결과를 마치 table 처럼 보면된다.
+
+```mysql
+select stid, round(avg(score), 2) as xx from scoret  group by stid;
+```
+
+`round(avg(score), 2)` 소수점 3번째자리에서 반올림
+
+from절의 서브쿼리에서
+
+```mysql
+select * from (select stid, round(avg(score), 2) from scoret  group by stid) as xx where xx <= 75;
+```
+
+> 될거 같은데 안된다. 데이터 베이스마다 지원안하기도한다 (오라클에서는 됨)
+>
+> 원래 이런것들은 view라는것을 만들어서 쓰는게 정석이기 때문
+
+```mysql
+select * from (select stid, round(avg(score), 2) as avg from scoret group by stid) xx where avg <= 75;
+```
+
+> 하지만 평균에 alias를 설정하면 가능
+
+```mysql
+create view score2v as select stid, round(avg(score), 2) as xx from scoret  group by stid;
+select * from score2v;
+```
+
+| 10101 | 76.67 |
+| ----- | ----- |
+| 10102 | 93.33 |
+| 10103 | 76.67 |
+| 10104 | 73.33 |
+| 10105 | 63.33 |
+| 10106 | 66.67 |
+
+view는 테이블은 아니고 결과를 합해서 볼수있는 하나의 창
+
+-> 보여지기만 하는 화면이므로 수정이나 삭제는 무의미하다.
+
+### select절의 서브쿼리
+
+```mysql
+select stid, name, (select avg(score) from scoret) as avg from studentt;
+```
+
+| 10101 | 홍길동 | 75.0000 |
+| ----- | ------ | ------- |
+| 10102 | 고길동 | 75.0000 |
+| 10103 | 이기자 | 75.0000 |
+| 10104 | 박기자 | 75.0000 |
+| 10105 | 김영삼 | 75.0000 |
+| 10106 | 김대중 | 75.0000 |
+
+레코드 하나마다 서브쿼리 문장도 돌아간다.
+
+````mysql
+select stid, name, (select avg(score) from scoret where stid= '10101') as avg from studentt;
+````
+
+| 10101 | 홍길동 | 76.6667 |
+| ----- | ------ | ------- |
+| 10102 | 고길동 | 76.6667 |
+| 10103 | 이기자 | 76.6667 |
+| 10104 | 박기자 | 76.6667 |
+| 10105 | 김영삼 | 76.6667 |
+| 10106 | 김대중 | 76.6667 |
+
+10101의 평균을 구하니 76점으로 전부나오게됨
+
+원래는 `select studentt.stid, studentt.name from studentt;` (우리는 생략)
+
+```mysql
+select x.stid, x.name from studentt as x;
+```
+
+```mysql
+select x.stid, x.name, (select avg(score) from scoret where stid= '10101') as avg from studentt as x;
+```
+
+| 10101 | 홍길동 | 76.6667 |
+| ----- | ------ | ------- |
+| 10102 | 고길동 | 76.6667 |
+| 10103 | 이기자 | 76.6667 |
+| 10104 | 박기자 | 76.6667 |
+| 10105 | 김영삼 | 76.6667 |
+| 10106 | 김대중 | 76.6667 |
+
+```mysql
+select x.stid, x.name, (select avg(score) from scoret where stid = x.stid) as avg from studentt as x;
+```
+
+| 10101 | 홍길동 | 76.6667 |
+| ----- | ------ | ------- |
+| 10102 | 고길동 | 93.3333 |
+| 10103 | 이기자 | 76.6667 |
+| 10104 | 박기자 | 73.3333 |
+| 10105 | 김영삼 | 63.3333 |
+| 10106 | 김대중 | 66.6667 |
+
+alias 별명을 지정해줌으로써 각각의 평균점수를 구할 수 있다.
+
+```mysql
+create table temp01t as select stid, avg(score) as avg from scoret group by stid;
+```
+
+```mysql
+create view temp01v as select stid, avg(score) as avg from scoret group by stid;
+```
+
+==결과를 view로 가지고 셀렉트를하면 오버헤드가 많이들어감 생성이후에 데이터 반영 됨==
+
+//점수를 바꾸면 view는 값이 변함
+
+==결과를 table로 가지고 셀렉트를하면 오버헤드 많이안들어감 속도 더빠름 생성이후에 데이터는 반영 x==
+
+// 그때의 결과의 복사품이라 값이안변함
+
+### 등수구하기
+
+```mysql
+create table temp02t as  select x.stid , x.avg, ( select count(*)+1 from temp01t where avg> x.avg)as ran from temp01t as x;
+```
+
+임시테이블 만들면 오버헤드가 적게발생함. 근데 바뀐점수가 바로 바로 적용되지않음
+
+이래서 새로 수정된 테이블들의 오버헤드를 적게만들기위해 수정된 점수는 몇일 뒤에 공개됩니다 라고 하게되는거
+
+///// 추가 rank는 예약어로 되서 workbench에서 돌렸을때는 에러가 난다. 근데 cmd에서 돌리면 됨
+
+```mysql
+select * from temp02t order by ran asc;
+```
+
+| 10102 | 93.3333 | 1    |
+| ----- | ------- | ---- |
+| 10101 | 76.6667 | 2    |
+| 10103 | 76.6667 | 2    |
+| 10104 | 73.3333 | 4    |
+| 10106 | 66.6667 | 5    |
+| 10105 | 63.3333 | 6    |
+
+asc는 오름차순 생략가능  desc로 주면 내림차순
+
+- 임시테이블과 뷰는 흩어진 데이터에서 자신이 원하는 데이터로 가공 할 수 있는 방법을 제공한다.
+
+  (비정형 데이터에서 정형화된 데이터를 만들어낸다)
+
+- 뷰는 오버헤드가 있지만 데이터의 변경을 즉각 반영한다. 임시테이블은 오버헤드 적지만 데이터의 변경을 즉각 반영 못함
+
+- select 서브쿼리는 오버헤드가 크다.
+
+  (1000명의 등수를 처리한 결과를 1000명이 동시 열람하면 100만건의 쿼리가 동작하는셈 + group by 오버헤드 포함)
+
+- 임시테이블은 이러한 부담을 극적으로 줄여준다
+
+   (도사들은 이걸 기가막히게 잘 쓴다.)
+
+```mysql
+create  table study3t study02t(
+    no int not null auto_increment primary key,
+theTime datetime not null);
+```
+
+```mysql
+insert into study3t values (default, now());
+```
+
+```mysql
+SELECT * FROM study.study02t;
+```
+
+| a0001 | abcd       |
+| ----- | ---------- |
+| a0001 | helloworld |
+| a00   | apple      |
+
+mysql은 일련번호 auto_increment privmary key 사용  오라클은 sequence 이용
+
+now()는 현재시간, 그것을 입력할때 datatime 자료형을 쓴다.
+
+```mysql
+select no, date_add(theTime, INTERVAL 1 MONTH) from study3t;
+select no, date_add(theTime, INTERVAL 4 DAY) from study3t;
+select no, date_add(theTime, INTERVAL 1 HOUR) from study3t;
+```
+
+시간이 추가되는 연산
+
+datetime 자료형에 들어있는 값은 연산이 가능하다
+
+==연산을 해야 할필요가 없을떄는 char를 쓰는게 바람직== 오버헤드가 더 적기 때문
+
+```mysql
+create  table study4t(
+    no int not null auto_increment primary key,
+theTime char(19) not null);
+```
+
+```mysql
+insert into study4t values (default, now());
+```
+
+| 1    | 2019-07-23 17:25:28 |
+| ---- | ------------------- |
+| 2    | 2019-07-23 17:25:29 |
+| 3    | 2019-07-23 17:25:29 |
+
+char로 선언해서 연산은 불가능하지만 오버헤드가 적음
+
