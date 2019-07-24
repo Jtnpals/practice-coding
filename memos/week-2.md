@@ -486,7 +486,6 @@ public class Test087 {
         }catch (Exception e){
             e.printStackTrace();
         }
-
     }
 }
 
@@ -524,9 +523,10 @@ public class Sever {
 
                 InputStream file = new BufferedInputStream(new FileInputStream(title));
                 int r = 0;
-                while((r =file.read()) != -1){
+                byte[] buf = new byte[1024*8];
+                while((r =file.read(buf)) != -1){
                     System.out.println("파일 전송 준비");
-                    os.write(r);
+                    os.write(buf, 0 ,r);
                     os.flush();
                 }
                 file.close();
@@ -566,9 +566,10 @@ public class Client {
                 System.out.println("파일 받기");
                 OutputStream file = new BufferedOutputStream(new FileOutputStream("music2.mp3"));
                 int r = 0;
-                while((r = is.read()) != -1){
+                byte[] buf = new byte[1024*8];
+                while((r = is.read(buf)) != -1){
                     System.out.println("파일 수신 준비");
-                    file.write(r);
+                    file.write(buf, 0, r);
                 }
             }else{
 
@@ -1281,4 +1282,414 @@ insert into study4t values (default, now());
 | 3    | 2019-07-23 17:25:29 |
 
 char로 선언해서 연산은 불가능하지만 오버헤드가 적음
+
+# Day3
+
+---
+
+## 데이터 설계 프로세스
+
+### 업무분석
+
+- 명사, 동사에 주의하여 업무를 정확하게 기술한다.
+
+- 업무 파악에 도움이 되는 어떤 형태의 자료도 확보한다.
+
+- 가능한 UI를 그려가면서 인터뷰를 진행한다.
+
+  (나중에 갈아업더라도 이 때 그려진 UI는 설계에 결정적인 영향을 끼친다.)
+
+- 말 만들기에 떄라서 설계에 영향이 갈 수있다. 경험이 중요하다.
+
+### 엔티티(Entity) 도출
+
++ 추상명사 중에서 PK로 구분되어지는 것이 Entity가 된다.
+
++ PK는 단일 필드의 특징이 있어야 한다.
+
+  (주민 번호의 경우 두개의  필드로 볼 수 있지만 단일한 성격으로 파악하는 것이 바람직하다.)
+
++ 기록될 만한 가치가 있는 정보인지 판별해야 한다.
+
+PK (Primary Key) (기본키라곧 부르기도 한다)
+
+: 레코드를 구분하는 기준으로 사용되는 필드들
+
+ex) 주민번호, 사번, 군번 ...
+
+주민번호처럼 두개의 필드가 결합하여 PK를 이룰 수 있다.
+
+PK는 3가지의 성격을 가져야한다.
+
+1. ND(No Duplicate): 중복되서는 안된다.
+
+   주민번호 중복되면 큰일남
+
+2. NN(Not Null): 생략되어서는 안된다.
+
+   주민번호 없는 국민??
+
+3. NC(No Change): 가급적 변경되어서는 안된다.
+
+   주민번호 한버바꾸면 모든 기록들에 영향이감
+
+[ 엔티티는 사각형으로 ERD에서 표현된다.]
+
+엔티티 예) 회원, 글, 과목, 학생
+
+### Relation (관계) 도출
+
+- 엔티티들 사이에서 동사가 '어울리게' 존재 가능하고, 그것이 기록할 만한 가치가 있다면 그것이 Relation이다.
+
+예) 회원은 글을 쓴다.(쓴다)
+
+​	  학생은 과목을 수강한다. (수강한다)
+
+1. 일대일 대응 : Be 동시에 해당하는 관계 or 상속관계
+
+   예) 사병은 군인이다. 장교는 군인이다. 군인은 군번으로 구분된다.
+
+2. 일대 다 대응 : [설명 참고]
+
+   예) 회원은 글을 쓴다.
+
+3. 다대다 대응 : [설명 참고]
+
+   학생은 과목을 수강한다. 회원은 글을 읽는다. 또한 추천한다.
+
+관계의 물리적인 구현방법
+
+1. 일대일 대응 : 조상의 PK를 자손의 PK이자 FK로 참조한다.
+2. 일대다 대응 : '다' 쪽에서 '일' 쪽의 PK를 FK로 참조한다.
+3. 다대다 대응 : 새로운 테이블을 만들고, 그 PK는 양쪽의 PK를 참조하는 FK를 결합하여 구성한다.
+
+### Attribute (속성) 파악
+
+- 일반명사중에서 자료형으로 값으로 표현 될 수 있는 것들.
+
+  예) 성적, 글쓴시간, 이름, 전화번호, 주소 ...
+
+- Entity, Relation에 1:1 로 매핑되는 곳에 배치한다.
+
+- 실제 구현시 필드에 해당한다.
+
+### ERD 구성
+
+- 분석에 가까운 형태, 구현에 가까운 형태 두가지가있다.
+
+  (두가지 다 그릴 줄 알아야한다.)
+
+- 엔티티는 사각형, 관계는 마름모로 그린다.
+
+  관계는 화살표 또는 실선으로 그린다. (도착쪽이 PK)
+
+  PK는 꽉찬 사탕막대기, 그 외 필드는 텅 빈 사탕막대기.
+
+  NOT NULL 필드는 굵은 글씨로 표기한다.
+
+- 그릴떄 용이한 많은 툴이 있다.
+
+  Microsoft Visio 를 강사 개인적으로는 추천한다.
+
+....
+
+정규화  : More Table, Less Column
+
+비정규화 : Less Table, More Column
+
+- 비정규화는 속도는 빠르지만 테이블 구조가 자주 변경될 여지가 있다.
+- 정규화는 속도는 느릴 수 있지만 테이블 구조가 안정적이다.
+- 정규화는 자료의 중복저장을 허용 안한다.(성적만 있으면 등수는 자동)
+- 비정규화는 자료의 중복저장을 허용하는 경향 ( 속도를 위해 등수필요)
+
+"결국 정규화를 중심으로 해서 적절한 비정규화를 추구하는 게 방향이지만 정답은 없다. 해서 이 분야눈 경험이 절대적으로 중요하다." 
+
+![boardERD](..\images\boardERD.png)
+
+> 게시판의 개념 관계행 데이터 베이스 모델
+
+**Foreign Key : 외래키**
+
+다른테이블의 PK로 쓰이는 필드를 내 쪽에서 참조해서 쓰는 필드(들)
+
+성적 테이블의 stid, subid - 성적 테이블의 stid는 학생테이블에 쓰이는 의미를 가져다가 쓴다.
+
+(성적테이블의 stid의 10101dms gkrtodxpdlqmfmdl stid의 10101과 동일한 의미이다.)
+
+## 정규화
+
+```mysql
+select * from score2t;
+select stid,name,(kor1 + eng1 +mat1)/3 as avg from score2t;
+```
+
+| 10101 | 홍길동 | 76.6667 |
+| ----- | ------ | ------- |
+| 10102 | 고길동 | 93.3333 |
+| 10103 | 이기자 | 76.6667 |
+| 10104 | 박기자 | 73.3333 |
+| 10105 | 김영삼 | 63.3333 |
+| 10106 | 김대중 | 66.6667 |
+
+score2t는 과목이 늘거나 줄 때에 대첵이  심각하다.
+
+그러나 동작속도는 무지하게 빠르다.
+
+score2t와 같이 설계된 경우를 비정규화 라고한다.
+
+정규화 : Less Column (테이블당 필드의 갯수가 적다 - 5~12개)
+
+More Table (score2t가 한개로 되는 걸 우리는 3개를 만들었다...
+
+필드와 데이터의 중복저장을 허용 안한다.
+
+필드와 데이터의 중복 저장을 허용 안한다
+
+비정규화 : More Column, Less Table
+
+필드와 데이터의 중복 저장을허용한다. (속도 때문에)
+
+"대부분 정규화를 기본으로 해서 적절한 비정규화를 도입한다."
+
+```mysql
+create table student_xt as select stid, name, addr from score2t where 0 = 1;
+```
+
+> 껍데기만 있는 테이블 복사
+
+```mysql
+insert into student_xt select stid, name, addr from score2t where 1=1;
+```
+
+> 껍데기에 자료 복붙
+
+## Join(서브쿼리와 유사한데, 서브쿼리와 좀 다르다)
+
+### inner join
+
+studentt : stid (PK) <- scoret : stid(FK)
+
+대부분의 Join은 PK-FK 사이에서 일어난다.
+
+```mysql
+Select * from studentt inner join scoret on studentt.stid = scort.stid;
+```
+
+mysql  : join  on
+
+oracle : 그냥 where절
+
+```mysql
+Select name,addr,score from studentt inner join scoret on studentt.stId = scoret.stId where subid ='MAT1';
+```
+
+| 홍길동 | 역삼동 | 90   |
+| ------ | ------ | ---- |
+| 고길동 | 개포동 | 90   |
+| 이기자 | 역삼동 | 70   |
+| 박기자 | 한남동 | 70   |
+| 김영삼 | 홍제동 | 80   |
+| 김대중 | 한남동 | 60   |
+
+Join을 이용하면 흩어진 데이터를 통합해서 보여지게 할 수 있다.
+
+(서브쿼리도 가능, 헌데 성능이 틀리다. 해서 같은 결과를 만들되 성능이 향상되게 만드는것이 SQL 튜닝의 영역)
+
+```mysql
+Select stid, name, score,  x.subid from scoret as x inner join subjectt as y on y.subId = x.subId;
+```
+
+| 10101 | 국어1 | 60   | KOR1 |
+| ----- | ----- | ---- | ---- |
+| 10101 | 영어1 | 80   | ENG1 |
+| 10101 | 수학1 | 90   | MAT1 |
+| 10102 | 국어1 | 90   | KOR1 |
+| 10102 | 수학1 | 90   | MAT1 |
+| 10102 | 영어1 | 100  | ENG1 |
+| 10103 | 국어1 | 70   | KOR1 |
+| 10104 | 국어1 | 80   | KOR1 |
+| 10105 | 국어1 | 50   | KOR1 |
+| 10106 | 국어1 | 60   | KOR1 |
+| 10103 | 영어1 | 90   | ENG1 |
+| 10104 | 영어1 | 70   | ENG1 |
+| 10105 | 영어1 | 60   | ENG1 |
+| 10106 | 영어1 | 80   | ENG1 |
+| 10103 | 수학1 | 70   | MAT1 |
+| 10104 | 수학1 | 70   | MAT1 |
+| 10105 | 수학1 | 80   | MAT1 |
+| 10106 | 수학1 | 60   | MAT1 |
+
+```mysql
+select name, avg, y.stid, addr from (select stid, avg(score) as avg from scoret group by stid) as x inner join studentt as y on y.stId = x.stid;
+```
+
+from절의 서브쿼리 결과도 inner join이 가능하더라.
+
+### outer join
+
+```mysql
+insert into subjectt values ('PHY1', '물리');
+select * from subjectt inner join score on subjectt.subid = scoret.subid;
+```
+
+물리가 추가되었어도 한건의 성적 데이터가 없으니 짜매어줄 대상이없다.
+
+회원가입이 되어도 글 쓴게 없으면 조인 걸어도 나타나지않는다.
+
+이런식으로 한쪽 테이블에서만 보여지고 짜매지지 않는 경우라도 한건 보여지게 만드는 형태의 조인이 Outer join 이다.
+
+```mysql
+select * from subjectt left outer join scoret on subjectt.subid = scoret.subid;
+```
+
+| MAT1 | 수학1 | 10103 | MAT1 | 70   |
+| ---- | ----- | ----- | ---- | ---- |
+| MAT1 | 수학1 | 10104 | MAT1 | 70   |
+| MAT1 | 수학1 | 10105 | MAT1 | 80   |
+| MAT1 | 수학1 | 10106 | MAT1 | 60   |
+| PHY1 | 물리  |       |      |      |
+
+left : 부족함(null로 채움)이 나타는 반대편을 명시한다. 
+
+subjectt랑 scoret 바꾸면 PHY1값 나타나지않음
+
+```mysql
+select subjectt.subid, count(*) from subjectt left outer join scoret on subjectt.subid = scoret.subid group by subjectt.subid;
+```
+
+| KOR1 | 6    |
+| ---- | ---- |
+| ENG1 | 6    |
+| MAT1 | 6    |
+| PHY1 | 1    |
+
+수강학생들 과목 값 함 출혁했는데 물리는 null인데 값이 들어가있어서 하나 있는걸로 세어짐
+
+떄문에 *을 필드로 명시
+
+```mysql
+select subjectt.subid, count(score) from subjectt left outer join scoret on subjectt.subid = scoret.subid group by subjectt.subid;
+```
+
+| KOR1 | 6    |
+| ---- | ---- |
+| ENG1 | 6    |
+| MAT1 | 6    |
+| PHY1 | 0    |
+
+count(*)은 레코드 갯수를 세고, count(필드)는 해당 필드의 null이 아닌 데이터의 갯수를 센다.
+
+## constraint
+
+물리적인 제약조건을 필드(들) 에 걸어준다.
+
+socre : 0 ~ 100 사이의 값만 허용해야한다.
+
+이런건 아예 못들어가게 막아야 한다.
+
+### check
+
+```mysql
+#insert into scoret values ('10101', 'PHY1', 120);
+#delete from scoret where score > 100;
+alter table scoret add constraint check_scort_score check ( score >= 0 and score <= 100);
+```
+
+alter table (테이블 수정) add constraint (제약조건 추가)
+
+제약조건은 check, unique, primary key, foreign key 4가지를 주로씀 
+
+지울때는 
+
+```mysql
+alter table scoret drop check check_scort_score;
+```
+
+check constraint는 where절의 조건을 이용하여 제약을 걸 수 있다.
+
+(in, not in, =, != ...을 사용할 수 있다.)
+
+### primary key
+
+```mysql
+alter table subjectt add constraint PK_subjectt_subid primary key (subid);
+```
+
+> 프라이머리 키 지정
+>
+> not null, no duplicate를 물리적으로 보장
+>
+> 테이블당 하나의 pk constraint 사용가능
+
+### foreign key
+
+```mysql
+alter table scoret add constraint fk_scoret_subid foreign key (subid) references subjectt (subid);
+```
+
+> 외래키 지정
+
+```mysql
+insert into scoret values ('10101', 'XXXX', 50);  -- 에러
+insert into scoret values ('10101', 'PHY1', 50);
+```
+
+참조 무결성 : PK쪽에서 쓰여진 데이터만 FK 쪽에서 쓰여질 수 있다.
+
+- 회원가입해야 글 쓴다.
+- 회원 등록 해야 예약한다.
+- 등록된 아이템만 대여가능하다.
+
+### unique
+
+```mysql
+create table study5t(id int not null);
+alter table study5t add constraint uq_study5y_id unique (id);
+insert into study5t values (100);
+insert into study5t values (100);  -- 에러남 같은값 집어놔서
+```
+
+다대다로 만들고 -> unique -> 일대다로 동작
+
+일대다 상황에서 테이블 분리하는 방법
+
+1. 일단 다대다로 생각하고 테이블을 생성
+
+2. PK중 하나에 unique constraint를 건다
+
+   다대다가 일대다로 바뀐다
+
+   PK 를 어떻게 할지를 선택하여 결정한다
+
+```mysql
+alter table study5t drop index uq_study5y_id;
+```
+
+유니크 지울때
+
+자세한 사항은 - https://www.w3schools.com/sql/sql_ref_drop_constraint.asp 참조
+
+## 문제
+
+### score2t로 subject 기반 subject_xt, score_xt를 만들고 기존의 데이터 재배치
+
+```mysql
+create table score_xt as select stid, 'KOR1' as subid, kor1 as score from score2t where 0 = 1;
+insert into score_xt select stid, 'KOR1', kor1 as score from score2t where 1=1;
+insert into score_xt select stid, 'ENG1', eng1 as score from score2t where 1=1;
+insert into score_xt select stid, 'MAT1', mat1 as score from score2t where 1=1;
+```
+
+| 10101 | 홍길동 | 역삼동 |
+| ----- | ------ | ------ |
+| 10102 | 고길동 | 개포동 |
+| 10103 | 이기자 | 역삼동 |
+
+비정규화된 설계에서 정구화된 설계로 옮길 수도 있고, 정규화된 설계에서 비정규화된 설계로 옮길 수도 있어야 한다.
+
+# Day3
+
+---
+
+
 
