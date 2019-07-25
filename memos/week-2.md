@@ -1,6 +1,6 @@
 [TOC]
 
-# Day1
+# Day1		
 
 ---
 
@@ -1687,7 +1687,638 @@ insert into score_xt select stid, 'MAT1', mat1 as score from score2t where 1=1;
 
 비정규화된 설계에서 정구화된 설계로 옮길 수도 있고, 정규화된 설계에서 비정규화된 설계로 옮길 수도 있어야 한다.
 
-# Day3
+# Day4
+
+---
+
+단일 thread 서버는 한순간에 접속이 몰리면 과부화되서 멈추는 현상이 발생
+
+- 때문에 개개인의 접근을 쓰레드로 돌릴 필요가 있다.
+
+(가상의 CPU)
+
+```java
+class CustomTreaded implements Runnable{
+    @Override
+    public void run() throws Exception{  <--- 에러남 오버라이딩할떄 thorws Exception못함 조상에 선언된 대로만 재정의해야함        
+    }
+}
+```
+
+```java
+package javaclass;
+
+class CustomTreaded implements Runnable{
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("HelloWorld" + i);
+        }
+    }
+}
+
+public class Test093 {
+    public static void main(String[] args) {
+        Thread thread = new Thread(new CustomTreaded());
+        thread.start();
+        // new Thread() 하면 가상의 CPU를 OS에서 할당받는다 (분신)
+        // 할당받은 CPU는 생성자에 넘겨진 포인터를 물고간다.
+        // start() 호출시에 준비과정을 거쳐 새로운 가상 CPU가 rb.run을 호출한다.
+        Thread thread1 = new Thread(new CustomTreaded(){
+            @Override
+            public void run() {
+                for (int i = 0; i < 100; i++) {
+                    System.out.println("HelloWorld" + i);
+                }
+            }
+        });
+        thread1.start();
+        Thread thread2 = new Thread(()->{
+            System.out.println("lamda");
+        });
+        thread2.start();
+    }
+}
+```
+
+1. Runnable 상속받은 클래스 선언
+2. new Thread하면서 1의 인스턴스 포인터를 넘긴다.
+3. Thread::start() 호출하면 가상 CPU(Thread)가 run()을 호출
+
+Program : executable file .
+
+Process : a running program
+
+Thread : a light-weighted process . (독자 행동을 하지만 조금 다르다)
+
+:쓰레드는 프로세스 안에서만 존재가가능하다
+
+:쓰레드간 메모리를 공유 할 수 있다.
+
+프로세스간은 메모리 전달은 가능해도 공유는 불가능하다.
+
+프로세스간의 메모리 전달의 대표적 수단이 소켓
+
+(복사 & 붙이기)도 전달로 볼 수 있지만 이건 윈도우에 국한된 개념
+
+프로세스 종료 == 프로세스가 가진 모든 쓰레드의 종료
+
+(인간으로 생각하면 이해 쉬움 : 뇌 위장 척추 ...)
+
+```java
+package javaclass;
+
+
+class A implements Runnable{
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 100 ; i ++) {
+            System.out.println("Apple");
+            int time = (int) (Math.random() * 1000);
+            try {
+                Thread.sleep(time);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+class B implements Runnable{
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 100 ; i ++) {
+            System.out.println("Banana");
+            int time = (int) (Math.random() * 1000);
+            try {
+                Thread.sleep(time);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+public class Test094 {
+    public static void main(String[] args) {
+        new Thread(new A()).start();
+        new Thread(new B()).start();
+// 쓰레드는 독자적으로 돌아가는 프로그램이된다.
+    }
+}
+```
+
+:Apple 사이에 Banana 끼어들게 안짰는데 결과는 그러했다.
+
+```java
+package javaclass;
+
+class A implements Runnable{
+
+    public A(Toilet toilet) {
+        this.toilet = toilet;
+    }
+    private Toilet toilet = null;
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 100 ; i ++) {
+            toilet.bigWork("Apple");
+            int time = (int) (Math.random() * 1000);
+            try {
+                Thread.sleep(time);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+class B implements Runnable{
+
+    private Toilet toilet = null;
+    public B(Toilet toilet) {
+        this.toilet = toilet;
+    }
+    @Override
+    public void run() {
+        for (int i = 0; i < 100 ; i ++) {
+            toilet.bigWork("banana");
+            int time = (int) (Math.random() * 1000);
+            try {
+                Thread.sleep(time);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+class Toilet{
+    public void bigWork(String str){
+        System.out.println("step 1:" + str + " do big work");
+        System.out.println("step 2:" + str + " do big work");
+        System.out.println("step 3:" + str + " do big work");
+        System.out.println("step 4:" + str + " do big work");
+        System.out.println("step 5:" + str + " do big work");
+    }
+}
+public class Test094 {
+    public static void main(String[] args) {
+        Toilet t = new Toilet();
+        new Thread(new A(t)).start();
+        new Thread(new B(t)).start();
+// 쓰레드는 독자적으로 돌아가는 프로그램이된다.
+    }
+}
+```
+
+```
+step 4:Apple do big work
+step 5:Apple do big work
+step 1:banana do big work
+step 2:banana do big work
+step 3:banana do big work
+step 4:banana do big work
+step 5:banana do big work
+step 1:banana do big work
+step 2:banana do big work
+```
+
+> 하나의 인스턴스에 같이 접근하다가 대참사가 일어나버림 (하나의 화장실에 둘이 들어가버림;;)
+>
+> 그래서 문을 잠궈야함!
+
+쓰레드 프로그램에서는 잠금이 중요한데 그것을 동기화 (synchronization) 이라고 한다.
+
+```java
+class Toilet{
+    public void bigWork(String str){
+        synchronized (this) {
+            System.out.println("step 1:" + str + " do big work");
+            System.out.println("step 2:" + str + " do big work");
+            System.out.println("step 3:" + str + " do big work");
+            System.out.println("step 4:" + str + " do big work");
+            System.out.println("step 5:" + str + " do big work");
+        }
+    }
+}
+```
+
+```
+step 1:Apple do big work
+step 2:Apple do big work
+step 3:Apple do big work
+step 4:Apple do big work
+step 5:Apple do big work
+step 1:banana do big work
+step 2:banana do big work
+step 3:banana do big work
+step 4:banana do big work
+step 5:banana do big work
+```
+
+> 모든 인스턴스에는 lock이라는 개념의 자물쇠/ 열쇠가있다.
+
+this가 가리ㅣ는 인스턴스가 가지고 있는 록을 획득해야 { 에 진입 가능.
+
+획득하지 못하면 쓰레드는 멈추어 기다려야한다.
+
+일을 마쳤으면 } 시점에서 lock을 반납한다.
+
+이런 방법으로 공유하는 메모리에서 작업 도중 끊기는 일을 막을 수 있다.
+
+```java
+package javaclass;
+
+class A implements Runnable{
+    public A(Toilet toilet) {
+        this.toilet = toilet;
+    }
+    private Toilet toilet = null;
+    @Override
+    public void run() {
+        for (int i = 0; i < 100 ; i ++) {
+            int time = (int) (Math.random() * 1000);
+            if(time % 2 == 0){
+                toilet.sleepWork("Apple");
+            }else{
+                toilet.bigWork("Apple");
+            }
+            try {
+                Thread.sleep(time);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+class B implements Runnable{
+
+    private Toilet toilet = null;
+
+    public B(Toilet toilet) {
+        this.toilet = toilet;
+    }
+    @Override
+    public void run() {
+        for (int i = 0; i < 100 ; i ++) {
+            int time = (int) (Math.random() * 1000);
+            if(time % 2 == 0){
+                toilet.sleepWork("Banana");
+            }else{
+                toilet.bigWork("Banana");
+            }
+            try {
+                Thread.sleep(time);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+class Toilet{
+    public void bigWork(String str){
+        synchronized (this) {
+            System.out.println("step 1:" + str + " do big work");
+            System.out.println("step 2:" + str + " do big work");
+            System.out.println("step 3:" + str + " do big work");
+            System.out.println("step 4:" + str + " do big work");
+            System.out.println("step 5:" + str + " do big work");
+        }
+    }
+    public synchronized void sleepWork(String str){
+            System.out.println("step 1:" + str + " zzz");
+            System.out.println("step 2:" + str + " zzz");
+            System.out.println("step 3:" + str + " zzz");
+    }
+}
+public class Test094 {
+    public static void main(String[] args) {
+        Toilet t = new Toilet();
+        new Thread(new A(t)).start();
+        new Thread(new B(t)).start();
+// 쓰레드는 독자적으로 돌아가는 프로그램이된다.
+    }
+}
+```
+
+```
+step 1:Apple do big work
+step 2:Apple do big work
+step 3:Apple do big work
+step 4:Apple do big work
+step 5:Apple do big work
+step 1:Apple zzz
+step 2:Apple zzz
+step 3:Apple zzz
+```
+
+메서드에도 synchronized 걸 수 있다. Apple의 big work가 호출되고 sleep이 호출될경우 이어서 됨 synchronized를 걸지않으면 쓰레드 중간에 서로 호출이 다를 수 있음
+
+### join
+
+쓰레드를 여러개 생성했는데 최종적으로 그걸 다 기다려야 할 때 join 필요
+
+```java
+package javaclass;
+
+class E implements Runnable{
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("a");
+        }
+    }
+}
+class D implements Runnable{
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("b");
+        }
+    }
+}
+class C implements Runnable{
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("c");
+        }
+    }
+}
+
+public class Test098 {
+    public static void main(String[] args) {
+        new Thread(new C()).start();
+        new Thread(new D()).start();
+        new Thread(new E()).start();
+
+        System.out.println("최종정리");
+    }
+}
+
+```
+
+```
+a
+a
+a
+최종정리
+a
+b
+b
+b
+```
+
+일이 다 끝나기전에 최종정리가 출력됨
+
+```java
+public class Test098 {
+    public static void main(String[] args) {
+        Thread[] threads = new Thread[3];
+        threads[0] = new Thread(new C());
+        threads[1] = new Thread(new D());
+        threads[2] = new Thread(new E());
+        threads[0].start();
+        threads[1].start();
+        threads[2].start();
+
+        try{
+            threads[1].join();
+        }catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("최종정리");
+    }
+}
+```
+
+D 쓰레드가 끝나기 전까지는 최종정리가 나오지않음
+
+```java
+ try{
+            threads[0].join();
+            threads[1].join();
+            threads[2].join();
+        }catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+System.out.println("최종정리");
+```
+
+세 쓰레드가 끝나기전까지는 최종 정리 문구 나오지않음
+
+### JDBC
+
+```java
+package javaclass;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class Test099 {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/study?characterEncoding=UTF-8&serverTimezone=UTC", "root", "tara0501");
+        Statement stmt = conn.createStatement();
+        System.out.println(stmt);
+        conn.close();
+    }
+}//jar파일은 클래스 파일을 압축해서 배포하는 파일
+//java -classpath .;mysql-connector-java-8.0.16.jar Test099
+```
+
++ Connection 은 mysql에 소켓으로 접속하는 것과 관계 깊음
++ study : 데이터베이스명
++ root/ tara0501 계정 및 암호
++ 127.0.0.1 : 루프백 아이피
+
+```java
+
+public class Test099 {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/study?characterEncoding=UTF-8&serverTimezone=UTC", "root", "tara0501");
+        Statement stmt = conn.createStatement();
+        System.out.println(stmt);
+        String sql = "insert into studentt values('10107', '또오치', '쌍문동')";
+        String sql2 = "delete from studentt where name = '또오치'";
+        String sql3 = "update studentt set addr = '이도동' where stid='10101'";
+        stmt.executeUpdate(sql3);
+        int rc = stmt.executeUpdate(sql2);
+        System.out.println(rc);
+        stmt.close();
+        conn.close();
+    }
+}
+```
+
+Statement는 줄을 타고 오가는 바구니를 연상하면 된다.
+
+1. 커넥션 설정(IP, PORT, ID, PW)
+2. 스테이트먼트 설정(SQL, 결과)
+
+excuteUpdate함수의 리턴값은 변경된 레코드의 갯수이다.
+
+🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔
+
+select는 레코드를 변경하지 않는다. 해서 excuteUpdate는 insert / delete / update 문장에 사용한다.
+
++ conn.close() 신중하게 해야한다. (줄 끊는것)
++ stmt.close()도 신중하게 (바구니 내리는거)
++ conn 형성 - stmt 형성 - 작업 - stmt.close() - conn.close()
+
+이 순서를 지켜서 작업한다.
+
+```java
+    static {
+//        static initializer는 클래스가 로딩되는 시점에 호출
+    }
+```
+
+Connection, Statement 모두 인터페이스이다.
+
+DriverManager.getConnection 안에서는 Connection을 상속받은 모종의 클래스의 인스턴스를 리턴한다.
+
+그것은 Mysql에 접속할 수 있는 기능을구현하고 있다.
+
+그 모종의 클래스를 세팅하는 코드가 `Class.forName("com.mysql.jdbc.Driver")`이다.
+
+```java
+package javaclass;
+
+import java.sql.*;
+
+public class Test099 {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/study?serverTimezone=UTC", "root", "tara0501");
+        System.out.println(conn.getClass().getName());
+        Statement stmt = conn.createStatement();
+        String sql = "select * from studentt";
+        ResultSet rs = stmt.executeQuery(sql);
+        while (rs.next()){
+            String stid = rs.getString("stid");
+            String name =  rs.getString("name");
+            String addr = rs.getString("addr");
+            System.out.println(stid + "\t" + name + "\t" + addr);
+        }
+        rs.close();
+        stmt.close();
+        conn.close();
+    }
+}
+```
+
+셀렉트를 한결과는 서버쪽에 저장된다. 자바는 포인터로 결과를 가르킬 뿐 connection을 close() 해보면 이를 알  수 있다.
+
+이를 serverside cursor 라고 한다.
+
+rs.next() 하면 리턴된 Result 셋에서 한 레코드씩 아래로 내려감 있으면 true 없으면 false
+
+`ResultSet`은 cursor (slect 결과)에 접근 가능한 정보.
+
+cursor는 서버에 생긴다.
+
+Connection이 닫힘 다음에서는 ResultSet은 사용 불가하다.
+
+(Connection 닫기 전에 사용 끝나야 한다.)
+
+Connection은 대단히 비싼자원이고 제한적이다.
+
+접속후에 빨리 끊어주는게 바람직하다 ( 콜센터를 연상하면 된다.)	
+
+```java
+package javaclass;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+class StudentVO {
+    //property는 멤버변수를이야기함
+    //헌데 멤버 변수는 getter/setter 를 이용하고 private하게 선언.
+    private String stId = null;
+    private String name = null;
+
+    public String getStId() {
+        return stId;
+    }
+
+    public void setStId(String stId) {
+        this.stId = stId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAddr() {
+        return addr;
+    }
+
+    public void setAddr(String addr) {
+        this.addr = addr;
+    }
+
+    private String addr = null;
+}
+
+
+public class Test099 {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        // O-R 규칙 (Golden Rule, Rule of Thumb)
+        //field -> property
+        //table -> class
+        //record -> instance
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/study?serverTimezone=UTC", "root", "tara0501");
+        System.out.println(conn.getClass().getName());
+        Statement stmt = conn.createStatement();
+        String sql = "select stid, addr, name from studentt"; //*은 인젝션에 취약함
+        ResultSet rs = stmt.executeQuery(sql);
+
+        List<StudentVO> rl = new ArrayList<>();//쌓기만하니 array리스트가 속도가 빠르니 유리
+        while (rs.next()){// Connection은 살아있을때 할 거 다해야 한다. Connection은 빨리 끊어야 한다.
+            StudentVO vo = new StudentVO();
+            vo.setStId(rs.getString("stid"));
+            vo.setAddr(rs.getString("addr"));
+            vo.setName( rs.getString("name"));
+            rl.add(vo);
+        }
+        rs.close();
+        stmt.close();
+        conn.close();
+        //close 이후에도 list 안에는 결과가 남아있게 됨
+        for(StudentVO vo : rl){
+            System.out.println(vo.getStId() + "\t" + vo.getName() + "\t" + vo.getAddr());
+        }
+    }
+}
+```
+
+VO  : ValueObject 의 약자 - 값을 담는 객체
+
+DTO : Data Transfer Object
+
+Entity 등을 사용하는 경우도 있는데 다 같은 이야기
+
+## 부록
+
+OBS 녹화 프로그램 설치하고 NVIDIA 제어판에서 프로그램설정에서 OBS 프로그램을 통합그래픽으로 지정해줘야 녹화됨
+
+## 문제
+
+
+
+# Day5
 
 ---
 
