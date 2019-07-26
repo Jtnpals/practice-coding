@@ -2316,11 +2316,629 @@ OBS 녹화 프로그램 설치하고 NVIDIA 제어판에서 프로그램설정�
 
 ## 문제
 
+```java
+package socket;
 
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Sever {
+    public static void main(String[] args) throws IOException {
+        ServerSocket svr = new ServerSocket(1123);
+        for(int i = 0; i < 3; i ++) {
+            System.out.println("Before accept()");
+            try (
+                    Socket skt = svr.accept();
+                    ObjectInputStream ois = new ObjectInputStream(skt.getInputStream());
+                    OutputStream os = skt.getOutputStream();
+                    ObjectOutputStream oos = new ObjectOutputStream(os);
+            ) {
+                System.out.println("After accept()");
+                String title = ois.readUTF();
+                File f = new File(title);
+                boolean b = f.exists();
+                System.out.println(b);
+                if (b) {
+                    oos.writeInt(200);
+                    oos.flush();
+                    Thread thread = new Thread(new FileDownThread(os, title, skt));
+                    thread.start();
+                    thread.join();
+                    //파일이 길이를 리턴한다. (long 형 자료에 주의)
+                    System.out.println(f.length());
+                } else {
+                    oos.writeInt(404);
+                    oos.flush();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        svr.close();
+        System.out.println("서버 종료");
+    }
+}
+```
+
+```java
+package socket;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+
+public class FileDownThread implements Runnable{
+    private OutputStream os;
+    private String title;
+    private Socket socket;
+
+    public FileDownThread(OutputStream os, String title, Socket skt) {
+        this.os = os;
+        this.title = title;
+        this.socket = skt;
+    }
+
+    @Override
+    public void run() {
+        try(
+        InputStream file = new BufferedInputStream(new FileInputStream(title));) {
+            int r = 0;
+            byte[] buf = new byte[512];
+            while ((r = file.read(buf)) != -1) {
+                System.out.println("--- Down loading ---");
+                os.write(buf, 0, r);
+                os.flush();
+            }
+            socket.close();
+        }catch(Exception e){
+
+        }
+
+    }
+}
+```
+
+```java
+package socket;
+
+import java.io.*;
+import java.net.Socket;
+
+public class Client {
+    public static void main(String[] args) {
+        try(
+                Socket skt = new Socket("127.0.0.1", 1123);
+                ObjectOutputStream oos = new ObjectOutputStream(skt.getOutputStream());
+                InputStream is = skt.getInputStream();
+                ObjectInputStream ois = new ObjectInputStream(is);
+
+        ){
+            oos.writeUTF("music.mp3");
+            oos.flush();
+            int status = ois.readInt();
+            System.out.println(status);
+            if(status == 200){
+                System.out.println("파일 받기");
+                int rand = (int) (Math.random()* 1000);
+                OutputStream file = new BufferedOutputStream(new FileOutputStream("music"+rand+".mp3"));
+                int r = 0;
+                byte[] buf = new byte[512];
+                while((r = is.read(buf)) != -1){
+                    System.out.println("파일 수신 준비");
+                    file.write(buf,0,r);
+                }
+                file.close();
+            }else{
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+}
+```
 
 # Day5
 
 ---
 
+짜장면집 ERD
 
+![shopERD](..\images\shopERD.png)
+
+```
+-- USER SQL
+CREATE USER "C##TEST" IDENTIFIED BY "tara0501"  ;
+
+-- QUOTAS
+
+-- ROLES
+GRANT "CONNECT" TO "C##TEST" ;
+GRANT "RESOURCE" TO "C##TEST" ;
+
+```
+
+create table study10t(
+
+id NUMBER(3),
+
+data VARCHAR2(10));
+
+
+
+INSERT INTO study
+
+오라클 숫자 : NUMBER(3) -최대 세자리수 숫자
+
+VARCHAR2 - 오라클에서 만든 속도가 조금 빠른 VARCHAR
+
+
+
+--
+
+create table study11t(
+
+id NUMBER(5),
+
+data CHAR(10));
+
+-
+
+-- 오라클과 mysql은 일련번호 만드는 법이 틀리다.
+
+:mysql auto_increment primary key 를 썻다.
+
+create sequence seq_study11;
+
+insert into study11t values (seq_study11.NEXTVAL, 'apple');
+
+
+
+select id, data || '*' from study11t;
+
+--mysql의 concat과 동일한 기능을 수행한다.
+
+--char(10)으로 선언한 필드에 'apple'을 넣으면 'apple     '이 된다. 고정길이
+
+Trim()- 좌우의 공백문자를 제거하는 역할을 한다.
+
+select id, TRIM(data) || '*' from study11t;
+
+create table study12t(
+
+the_time date);
+
+
+
+insert into study12t values(sysdate);
+
+select to_char(the_time, 'YYYY-MM-DD') from study12t;
+
+-오라클으 ㅣ날짜시간은 date 자료형을 이용한다 현재 시간은 sysdate를 이용한다.
+
+보여지는 형식은 to_char을 이용하여 형식을 지정하면 된다.
+
+select to_char(the_time, 'YYYY-MM-DD HH24:MI:SS') from study12t;
+
+
+
+역삼동에 사는 학생의 국어성적을 서브쿼리로 구하세요.
+
+select stid from studentt where addr like '%역삼%';
+
+select * from scoret where stid in ('10101', '10103') and subid = 'KOR1';
+
+select * from scoret where stid in (select stid from studentt where addr like '%역삼%') and subid = 'KOR1'
+
+
+
+학생별 평균점수를 group by로 구하세요
+
+select stid, avg(score) from scoret group by stid;
+
+--
+
+select * from studentt inner join scoret on studentt.stid = scoret.stid;
+
+오라클은 이렇게 이너조인을 할 수 있다.
+
+select * from studentt, scoret where studentt.stid = scoret.stid;
+
+...
+
+insert into subjectt values ('PHY1', '물리');
+
+select * from subjectt LEFT OUTER JOIN scoret ON subjectt.subid = scoret.subid;
+
+
+
+--오라클용 아우터 조인의 문법
+
+null값으로 채워지는 일이 발생하는 쪽에 (+) 표시를 붙인다.
+
+select * from subjectt, scoret WHERE subjectt.subid = scoret.subid(+);
+
+
+
+-- inner join on, outer join on 국제표준 SQL
+
+각 DB 별로 변형 SQL을 탑재
+
+오라클의 변형방법을 다른 DB업체들이 따라하기도 한다.
+
+오라클만 쓰는 사람들은 오라클의 방법만을 고집하는 경우가 많다.
+
+mysql시 테이블의 별칭을 줄 떄는 as 사용 x (mysql은 선택)
+
+select * from (select stid, avg(score) as avg from scoret group by stid) x;
+
+
+
+select * from (select stid, avg(score) as avg from scoret group by stid) x, studentt y where x.stid = y.stid;
+
+-- as문법, join의 문법이 약간 틀리다. 하지만 기본 개념은 동일하다.
+
+거의 모든 데이터베이스의 기본 개념은 같다
+
+하나 해놓으면 다른거 어렵지 않다.
+
+Constraint in Oracle
+
+Primarykey, foreign key, check, unique, not null
+
+alter table studentt add constraint pk_studentt_stid primary key (stid);
+
+참조 무결성 :FK쪽에는 PK에 없는 데이터는 존재하면 안된다.
+
+alter table studentt add constraint fk_scoret_stid foreign key (stid) references studentt (stid);
+
+--
+
+delete from studentt where stid = '10101'
+
+primary key에서 지워지면 참조무결성 위배됨 foreign key에서 없는 primary key를 참조하게 되기 떄문
+
+insert into scoret values('10109', 'KOR1', 100); -> 10109라는 사람이 없으니 참조무결성위배해서 실행안됨
+
+
+
+alter tavle scoret add constraint fk_scoret_subid foreign key (subid) references subjectt (subid);-안만들어짐
+
+fk constraint는 먼저 참조할 대상 pk constraint가 존재해야 생성 가능
+
+alter table scoret add constraint ck_scoret_score check(score >=0 and score <= 100);
+
+
+
+insert into scoret values ('10101', 'PHY1', 120); //체크 제약조건위배되서 안들어가짐
+
+alter table subjectt add constraint uq_subject_subid unique (subid);
+
+: not null은 보장안함 . no duplicate는 보장
+
+inseert into subjectt values (null, '없음0'); -널값의 중복은 허용
+
+inseert into subjectt values ('KOR1', '없음0'); -중복 허용 x
+
+권장사항 : constraint는 테스트 끝나고서... (회원가입 담당자가 일 다안한 상황에서 게시판 담당자가 테스트 들어가려면?)
+
+alter table scoret drop constraint ck_scoret_score;
+
+alter table subject drop constraint uq_subjectt_subid;
+
+alter table subject drop constraint pk_subjectt_stid;
+
+create table bangmyung_t(no int, gul varchar(100), the_time date);
+
+create sequence seq_bangmyng;
+
+insert into bangmyung_t values (seq_bangmyung.nextval, '만나서 반갑습니다.', sysdate);
+
+...
+
+mysql > create table bangmyung_t (
+
+no int auto_increment primary key,
+
+gul varchar(100),
+
+the_time datetime);
+
+
+
+//함수로 선언해서 재사용성을 높였다.
+
+sql문장에서 에러 -> `stmt.executeUpdate(sql)`에서 예외 발생 
+
+-> conn.close() 실행 안한다 -> 큰에러
+
+```java
+package day0725.test103;
+
+import java.sql.*;
+
+public class Test103 {
+    /*
+        executeUpdate 상황엣 에러나도 conn.close() 는 되어야 한다? ㅇㅇ
+        finally 영역은 try 영역에서 에러가 나건 안나건 무조건 실향한다.
+        :stmt.close() conn.close() 를 finally 로 옮김.
+        : 변수선언 정리
+        getConnection() 에서 에러나면? conn 과 stmt 는 null 인 채로 finally 행
+        그러면 stmt.close()가 참조형변수가 null이므로 메소드를 실행할 수 없어 에러가남
+        stmt.close() conn.close() 가 stmt , conn 이 null 이 아닐때만
+            호출하도록 개선했다.
+            : 프로젝트 때 마르고 닳도록 쓸거다
+     */
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        addGul("HelloApple");
+
+    }
+
+    private static void addGul(String gul) throws ClassNotFoundException, SQLException {
+        Connection conn = null;
+        Statement stmt = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521/XE", "HR", "HR");
+
+            stmt = conn.createStatement();
+            String sql = "insert into bangmyung_t values (seq_bangmyung.nextval,'" + gul + "' , sysdate)";
+            stmt.executeUpdate(sql);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+            System.out.println("all closesd");
+        }
+
+
+    }
+/*
+       함수로 선언해서 재사용성을 높였다.
+       SQL 문장에서 에러 -> stmt.executeUpdate(sql) 에서 예외발생
+       -> conn.close() 실행 안된다. -> 이건 좀 크다  (conn 은 빨리 끊어야)
+
+    private static void addGul(String gul) throws ClassNotFoundException, SQLException {
+
+        Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521/XE", "HR", "HR");
+
+        Statement stmt = conn.createStatement();
+        String sql = "insert into bangmyung_t values (seq_bangmyung.nextval,'" + gul + "' , sysdate)";
+        stmt.executeUpdate(sql);
+
+        stmt.close();
+        conn.close();
+    }
+*/
+}
+```
+
+
+
+```java
+package day0725.test104;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+class BangMyungVO {
+    private Integer no = null;
+    private String gul = null;
+    private String theTime = null;
+
+    public Integer getNo() {
+        return no;
+    }
+
+    public void setNo(Integer no) {
+        this.no = no;
+    }
+
+    public String getGul() {
+        return gul;
+    }
+
+    public void setGul(String gul) {
+        this.gul = gul;
+    }
+
+    public String getTheTime() {
+        return theTime;
+    }
+
+    public void setTheTime(String theTime) {
+        this.theTime = theTime;
+    }
+}
+
+public class Test104 {
+    public static List<BangMyungVO> findAll() throws Exception {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        List<BangMyungVO> ls = new ArrayList<BangMyungVO>();
+        try {
+            conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521/XE", "HR", "HR");
+            stmt = conn.createStatement();
+            String sql = "select * from bangmyung_t";
+            rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                BangMyungVO vo = new BangMyungVO();
+                vo.setNo(rs.getInt("no"));
+                vo.setGul(rs.getString("gul"));
+                vo.setTheTime(rs.getString("the_time"));
+                ls.add(vo);
+            }
+        } catch (SQLException e) {
+            throw e; //에러나면 잡고 finally 거치고 다시 발생.
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+
+        }
+
+
+        return ls;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        List<BangMyungVO> ls2 = findAll();
+        for (BangMyungVO t : ls2) {
+            System.out.println(t.getNo() + t.getGul() + t.getTheTime());
+        }
+    }
+}
+```
+
+
+
+```java
+package javaclass;
+public class BangMyungVO {
+    private Integer no = null;
+    private String gul = null;
+    private String theTime = null;
+
+    public Integer getNo() {
+        return no;
+    }
+
+    public void setNo(Integer no) {
+        this.no = no;
+    }
+
+    public String getGul() {
+        return gul;
+    }
+
+    public void setGul(String gul) {
+        this.gul = gul;
+    }
+
+    public String getTheTime() {
+        return theTime;
+    }
+
+    public void setTheTime(String theTime) {
+        this.theTime = theTime;
+    }
+}
+
+```
+
+```java
+package javaclass;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BangMyungDAO {
+    static {
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+        }catch (ClassNotFoundException e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void addGul(String gul) throws ClassNotFoundException, SQLException {
+        Connection conn = null;
+        Statement stmt = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521/XE", "HR", "HR");
+
+            stmt = conn.createStatement();
+            String sql = "insert into bangmyung_t values (seq_bangmyung.nextval,'" + gul + "' , sysdate)";
+            stmt.executeUpdate(sql);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+            System.out.println("all closesd");
+        }
+
+
+    }
+
+
+    public static List<BangMyungVO> findAll() throws Exception {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        List<BangMyungVO> ls = new ArrayList<BangMyungVO>();
+        try {
+            conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521/XE", "HR", "HR");
+            stmt = conn.createStatement();
+            String sql = "select * from bangmyung_t";
+            rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                BangMyungVO vo = new BangMyungVO();
+                vo.setNo(rs.getInt("no"));
+                vo.setGul(rs.getString("gul"));
+                vo.setTheTime(rs.getString("the_time"));
+                ls.add(vo);
+            }
+        } catch (SQLException e) {
+            throw e; //에러나면 잡고 finally 거치고 다시 발생.
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+
+        }
+
+        return ls;
+    }
+}
+
+```
+
+```java
+package javaclass;
+
+import java.sql.SQLException;
+import java.util.List;
+
+public class Test105 {
+    public static void main(String[] args) throws Exception {
+        BangMyungDAO.addGul("끝이 보이냐?");
+        List<BangMyungVO> ls = BangMyungDAO.findAll();
+        for(BangMyungVO vo : ls){
+            System.out.println(vo.getNo()+"\t"+vo.getGul()+"\t"+vo.getTheTime());
+        }
+
+    }
+}
+```
 
