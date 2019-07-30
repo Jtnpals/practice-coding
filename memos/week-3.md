@@ -435,3 +435,227 @@ A는 OracleImple을 구현한다. (jdbc 코드 작성)
 Fack -> Oracle로
 
 데이터를 다루는 코드를 독립딘 클래스로 만들 디 그 작업들을 추상화한 인터페이스를 기반으로 만드는 설계기법을 DAO(Data Access Object) Pattern 이라고 한다.
+
+```java
+package np;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class LifeServlet extends HttpServlet {
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println(this.toString());
+    }
+}
+```
+
+```
+np.LifeServlet@55763006
+np.LifeServlet@55763006
+np.LifeServlet@55763006
+np.LifeServlet@55763006
+np.LifeServlet@55763006
+```
+
+호출될 때 마다 같은 주소 리턴.
+
+하나의 인스턴스를 계속 재활용하고 있음
+
+여러사람이 접속해도 인스턴스는 1개만 생김
+
+- 동일한 인스턴스가 계속 재사용되고 있다. : 메모리관리에는 장점이다.
+- 한꺼번에 많이 들어와도 적게 메모리를 소모한다.
+
+
+
+```java
+package np;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+public class LifeServlet extends HttpServlet {
+    private  int i = 0;
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        System.out.println(this.toString());
+
+        PrintWriter out = res.getWriter();
+        out.println("<html><body>");
+        i=i+1;
+        for (int i = 0; i < 20000; i++) {
+            out.println(this.i);
+        }
+        out.println("</html></body>");
+
+
+        out.flush();
+        out.close();
+    }
+}
+```
+
+다음과 같은 코드로 동시 접속이 일어나면 멀티 쓰레드로 동작함
+
+i값이 달라짐 동일한 인스턴스를 참조해서
+
+서블릿을 쓸 때에는 동시에 여러쓰레드가 접근할 수 있음을 염두해 두어야한다.
+
+->해결방법 1 로컬 변수만 사용
+
+-> 동기화
+
+```java
+package np;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+public class LifeServlet extends HttpServlet {
+    private int i = 0;
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        System.out.println(this.toString());
+
+        PrintWriter out = res.getWriter();
+        out.println("<html><body>");
+        //synchronized로 동기화
+        synchronized (this) {
+            i = i + 1;
+            for (int i = 0; i < 20000; i++) {
+                out.println(this.i);
+            }
+        }
+        out.println("</html></body>");
+        out.flush();
+        out.close();
+    }
+}
+```
+
+```java
+package np;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class ConfigServlet extends HttpServlet {
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        System.out.println("init");
+    }
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        System.out.println("service");
+    }
+}
+
+```
+
+```
+init
+service
+service
+service
+service
+```
+
+서블릿 인스턴스는 재활용된다.
+
+인스턴스는 재활용을 위해 내부적으로 적재되는데
+
+적재되는 시점에 호출되는 함수가 init - 최초 요청시에만 호출된다.
+
+```xml
+    <servlet>
+        <servlet-name>config</servlet-name>
+        <servlet-class>np.ConfigServlet</servlet-class>
+        <init-param>
+            <param-name>apple</param-name>
+            <param-value>blabla</param-value>
+        </init-param>
+    </servlet>
+```
+
+```java
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        System.out.println("init");
+
+        String val = config.getInitParameter("apple");
+        System.out.println(val);//web.xml과 연관있음
+    }
+```
+
+```
+init
+blabla
+```
+
+web.xml에 설정된 내용을 읽어 들일 수 있는 방법을 제공한다.
+
+### WEB-INF의 절대경로
+
+```java
+        ServletContext application = config.getServletContext();
+        String path = application.getRealPath("/WEB-INF/");
+        System.out.println(path);
+```
+
+```
+D:\Github\untitled\out\artifacts\untitled_war_exploded\WEB-INF\
+```
+
+WEB-INF 폴더의 절대경로값을 얻어온다.
+
+브라우저가 접근 못하는 폴더가 업로드 파일을 놓기에 가장 적합하다.
+
+허락받고 (돈내고) 다운 받을 때 FileInputStream으로 읽어 내보낸다.
+
+그 경우에 getRealPath는 유용하게 쓰인다.
+
+```java
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        System.out.println("service");
+        String l = req.getContextPath(); //context 경로
+        System.out.println(l);
+        String m = req.getRequestURI(); //IP주소 다음 나오는 전체경로
+        System.out.println(m);
+        String n = req.getRemoteAddr();//접속한 브라우저의 IP주소값
+        System.out.println(n);
+        String o = req.getHeader("User-Agent"); //접속한 브라우저와 운영체제 정보를 담은 문자열이 얻어짐
+        System.out.println(o);// 이것을 이용하여 모바일로 접근한 건지 컴퓨터로 접근한건지 알 수 있고
+    }// 모바일용 화면과 컴용 화면을 구분하여 제공가능
+```
+
+```
+service
+/study
+/study/config
+127.0.0.1
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36
+```
+
+
+
+# Day3
+
+---
+
