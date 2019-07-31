@@ -1229,15 +1229,21 @@ public class JSPServlet extends HttpServlet {
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     Exception error = (Exception) session.getAttribute("error");
+    StringBuffer sb = new StringBuffer();
+    for(StackTraceElement str : error.getStackTrace()){
+        sb.append(str.toString());
+        sb.append("<br>");
+    }
 %>
 <html>
 <head>
     <title>Title</title>
 </head>
 <body>
-<%= error.toString()%>
+<%=sb.toString() %>
 </body>
 </html>
+
 ```
 
 ```jsp
@@ -1309,7 +1315,7 @@ public class JSPServlet extends HttpServlet {
 
     BangMyungDAO dao = new BangMyungDAO_OracleImpl();
     try{
-        dao.add(null);
+        dao.add(pvo);
     }catch (Exception e){
         err = e;
     }
