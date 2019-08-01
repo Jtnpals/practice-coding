@@ -11,9 +11,11 @@ import java.sql.SQLException;
 
 public class GuestBookDAOTest {
     private GuestBookDAO guestBookDAO;
+    private DAOFactory daoFactory;
     @Before
     public void setup() {
-        guestBookDAO = new GuestBookDAO();
+        daoFactory = new DAOFactory();
+        guestBookDAO = DAOFactory.getGuestBookDAO();
     }
 
     @Test

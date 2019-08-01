@@ -6,8 +6,12 @@ import java.sql.SQLException;
 
 public class OracleConnectionMaker implements ConnectionMaker {
     @Override
-    public Connection getConnection() throws ClassNotFoundException, SQLException {
-        Class.forName("oracle.jdbc.driver.OracleDriver");
+    public Connection getConnection() throws SQLException {
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         return DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:orcl", "hr", "hr");
     }
 }

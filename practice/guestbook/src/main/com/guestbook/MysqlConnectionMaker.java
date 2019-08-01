@@ -6,8 +6,12 @@ import java.sql.SQLException;
 
 public class MysqlConnectionMaker implements ConnectionMaker {
     @Override
-    public Connection getConnection() throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.cj.jdbc.Driver");
+    public Connection getConnection() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         return DriverManager.getConnection("jdbc:mysql:127.0.0.1:3306/guestbook", "root", "tara0501");
     }
 }
