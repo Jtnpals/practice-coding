@@ -28,4 +28,16 @@ public class GuestBookDAOTest {
         assertEquals(createDate, guestBookVO.getCreateDate());
     }
 
+    @Test
+    public void insert() throws SQLException, ClassNotFoundException {
+        GuestBookVO guestBookVO = new GuestBookVO();
+        guestBookVO.setContent("새로운 글");
+
+        Integer commentNo = guestBookDAO.insert(guestBookVO);
+        GuestBookVO insertedGuestbookVO = guestBookDAO.get(commentNo);
+
+        assertEquals(commentNo, insertedGuestbookVO.getCommentNo());
+        assertEquals(guestBookVO.getContent(), insertedGuestbookVO.getContent());
+    }
+
 }
