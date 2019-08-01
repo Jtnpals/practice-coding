@@ -3,10 +3,10 @@ package com.guestbook;
 import java.sql.*;
 
 public class GuestBookDAO {
+    private final ConnectionMaker connectionMaker = new OracleConnectionMaker();
 
     public GuestBookVO get(Integer commentNo) throws ClassNotFoundException, SQLException {
-        Class.forName("oracle.jdbc.driver.OracleDriver");
-        Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:orcl","hr", "hr");
+        Connection connection = connectionMaker.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM GUESTBOOK WHERE COMMENT_NO = ?");
         preparedStatement.setInt(1, commentNo);
         ResultSet resultSet = preparedStatement.executeQuery();
@@ -20,8 +20,7 @@ public class GuestBookDAO {
     }
 
     public Integer insert(GuestBookVO guestBookVO) throws ClassNotFoundException, SQLException {
-        Class.forName("oracle.jdbc.driver.OracleDriver");
-        Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:orcl","hr", "hr");
+        Connection connection = connectionMaker.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO GUESTBOOK (COMMENT_NO, CONTENT, CREATE_DATE) VALUES (SEQ_GUESTBOOK.nextval, ?, SYSDATE)", new String[] {"COMMENT_NO"});
         preparedStatement.setString(1, guestBookVO.getContent());
 
@@ -35,5 +34,4 @@ public class GuestBookDAO {
         connection.close();
         return commentNo;
     }
-
 }
