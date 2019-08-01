@@ -1337,7 +1337,707 @@ public class JSPServlet extends HttpServlet {
 </html>
 ```
 
+# Day4
+
+---
+
+사전 DB 생성
+
+```sql
+--scr/talk.sql.txt
+
+create table talk_room_t(
+    room_no number(5),
+    apple char(4),
+    banana char(4),
+    orange char(4)
+);
+
+insert into talk_room_t values (0, '1234', '2345', '3456');
+COMMIT;
+
+create table talk_t(
+    talk_no number(6),
+    room_no number(5),
+    content varchar2(128)
+);
+
+create sequence seq_talk;
+
+insert into talk_t values (seq_talk.nextval, 0, 'blabla...');
+COMMIT;
+```
+
+## 강제 에러발생
+
+```java
+        if(err == null){
+            throw new Exception();
+        }
+```
+
+테이블은 클래스로
+
+필드는 프로퍼티(멤버변수 + Setter, Getter)
+
+레코드는 인스턴스
+
+```java
+    try{
+        byte[] bs = content.getBytes("8859_1");
+        content = new String(bs, StandardCharsets.UTF_8);
+    }catch (Exception e){
+
+    }
+```
+
+한글 안깨지게 하기
+
+## 관리자
+
+```jsp
+<%@ page import="apple.Util" %>
+<%@ page import="apple.TalkVO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.sql.DriverManager" %>
+<%@ page import="java.sql.Connection" %>
+<%@ page import="java.sql.PreparedStatement" %>
+<%@ page import="java.sql.ResultSet" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    Cookie[] cks = request.getCookies();
+    String ctxPath = request.getContextPath();
+    String style = null;
+    if( cks == null){
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+        return;
+    }
+    String myAddr = request.getRemoteAddr();
+    int roomNo = -1;
+    String level = null;
+    for (Cookie ck : cks) {
+        if (ck.getName().equals("level")) {
+            level = ck.getValue();
+        } else if (ck.getName().equals("roomNo")) {
+            roomNo = Util.parseInt(ck.getValue());
+        }
+    }
+    if( level == null || !level.equals("apple")){
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+        return;
+    }
+
+    List<TalkVO> rl = new ArrayList<>();
+    Exception err = null;
+    TalkVO talkVO = null;
+    try{
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:orcl","hr", "hr");
+        String sql = "select * from talk_t where room_no = ? order by talk_no desc";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, roomNo);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()){
+            talkVO = new TalkVO();
+            talkVO.setTalkNo(rs.getInt("talk_no"));
+            talkVO.setRoomNo(rs.getInt("room_no"));
+            talkVO.setContent(rs.getString("content"));
+            talkVO.setAddr(rs.getString("addr"));
+            rl.add(talkVO);
+        }
 
 
+        rs.close();
+        stmt.close();
+        conn.close();
+    }catch (Exception e){
+        err = e;
+    }
 
+    if(err != null){
+        response.sendRedirect(ctxPath + "/error.jsp");
+        return;
+    }
+%>
+<!doctype html>
+<html lang="ko">
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+<h1>talk_view_apple.jsp</h1>
+<h2><%=roomNo%>번방 입니다.</h2>
+<table class="table">
+    <tr>
+        <th scope="col">no</th>
+        <th scope="col">content</th>
+        <th scope="col">&nbsp</th>
+    </tr>
+<%
+    for (TalkVO vo : rl) {
+%>
+<tr>
+    <td><%=vo.getTalkNo()%></td>
+    <td><%=vo.getContent()%></td>
+    <td><a href="talk_del2.jsp?talk_no=<%=vo.getTalkNo()%>">삭제</a></td>
+</tr>
+<%
+    }
+%>
+</table>
+<div class="container">
+    <div class="col">
+        <%
+            for (TalkVO vo : rl) {
+               style = (myAddr.equals(vo.getAddr())) ? "col-auto mr-auto" : "col-auto ml-auto";
+        %>
+
+        <div class="row">
+            <%
+                System.out.println(myAddr);
+                System.out.println(vo.getAddr());
+                System.out.println(style);
+            %>
+            <div class="<%=style%> mb-1 bg-secondary rounded">
+                <%=vo.getContent()%>
+            </div>
+        </div>
+        <%
+            }
+        %>
+    </div>
+</div>
+
+<form method="post" action="talk_add2.jsp">
+    <textarea rows="7" cols="60" name="content"></textarea>
+    <input type="submit" value="write"/>
+</form>
+
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
+```
+
+## 추가
+
+```jsp
+<%@ page import="apple.Util" %>
+<%@ page import="java.sql.Connection" %>
+<%@ page import="java.sql.DriverManager" %>
+<%@ page import="java.sql.PreparedStatement" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+<%
+    String ctxPath = request.getContextPath();
+    int roomNo = -1;
+    String level = null;
+    String content = Util.h(request.getParameter("content"));
+
+
+    System.out.println(content);
+    Cookie[] cks = request.getCookies();
+    if(cks == null){
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+        return;
+    }
+
+    for (Cookie ck : cks) {
+        if (ck.getName().equals("level")) {
+            level = ck.getValue();
+        } else if (ck.getName().equals("roomNo")) {
+            roomNo = Util.parseInt(ck.getValue());
+        }
+    }
+
+    if(content == null || "".equals(content.trim())){
+        response.sendRedirect(ctxPath + "/talk_view_apple.jsp");
+        return;
+    }
+
+    if( level == null || level.equals("orange") || roomNo == -1){
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+        return;
+    }
+
+    Exception err = null;
+    try{
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:orcl","hr", "hr");
+        String sql = "insert into talk_t values (seq_talk.nextval, ?, ?, ?)";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, roomNo);
+        stmt.setString(2, content);
+        stmt.setString(3, request.getRemoteAddr());
+        stmt.executeUpdate();
+
+        stmt.close();
+        conn.close();
+    }catch (Exception e){
+        err = e;
+    }
+
+    if(err != null){
+        response.sendRedirect(ctxPath + "/error.jsp");
+        return;
+    }else {
+        response.sendRedirect(ctxPath + "/talk_view_apple.jsp");
+    }
+%>
+```
+
+## 로그인
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<h1>talk_login.jsp</h1>
+<%--POST: 택배 GET:엽서
+    GET 방식일때는 주소 옆에 붙어간다. POST는 내부에 숨겨서간다.
+    talk_login2.jsp?roomNo=0&pwd=abcd
+    강사습관 : html 을 생성하지 않는 곳은 2를 붙이더라
+--%>
+<form method="post" action="talk_login2.jsp">
+    <input type="text" name="roomNo" size="4"/>
+    <input type="password" name="pwd" size="8"/>
+    <input type="submit"/>
+</form>
+
+</body>
+</html>
+```
+
+```jsp
+<%@ page import="apple.Util" %>
+<%@ page import="java.sql.Connection" %>
+<%@ page import="java.sql.DriverManager" %>
+<%@ page import="java.sql.PreparedStatement" %>
+<%@ page import="java.sql.ResultSet" %>
+<%@ page import="apple.TalkRoomVO" %>
+<%@page %><%
+
+    //문자열 숫자 변환시에 에러 발생될 수 있으니 감안한 코드 : Util.parseInt
+    String ctxPath = request.getContextPath();
+    int roomNo = Util.parseInt(request.getParameter("roomNo"));
+    String pwd = request.getParameter("pwd");
+
+    if( roomNo == -1 || pwd == null || "".equals(pwd)){
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+        //sendRedirect 뒤에는 의미없으니 return
+        return;
+    }
+
+    Exception err = null;
+    TalkRoomVO vo = null;
+    try{
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:orcl","hr", "hr");
+        String sql = "select * from talk_room_t where room_no = ?";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, roomNo);
+        ResultSet rs = stmt.executeQuery();
+
+        if(rs.next()){
+            vo = new TalkRoomVO();
+            vo.setRoomNo(rs.getInt("room_no"));
+            vo.setApple(rs.getString("apple"));
+            vo.setBanana(rs.getString("banana"));
+            vo.setOrange(rs.getString("orange"));
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+    }catch (Exception e){
+        err = e;
+    }
+
+    System.out.println(vo);
+
+    if(err != null){
+        response.sendRedirect(ctxPath + "/error.jsp");
+        return;
+    }
+
+    if(vo == null){
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+        return;
+    }
+    else if(vo.getApple().equals(pwd)){
+        Cookie ck = new Cookie("level", "apple");
+        response.addCookie(ck);
+        Cookie ck2 = new Cookie("roomNo", String.valueOf(roomNo));
+        response.addCookie(ck2);
+
+        response.sendRedirect(ctxPath + "/talk_view_apple.jsp");
+    }else if(vo.getBanana().equals(pwd)){
+        Cookie ck = new Cookie("level", "banana");
+        response.addCookie(ck);
+        Cookie ck2 = new Cookie("roomNo", String.valueOf(roomNo));
+        response.addCookie(ck2);
+
+        response.sendRedirect(ctxPath + "/talk_view_banana.jsp");
+
+    }else if(vo.getOrange().equals(pwd)){
+        Cookie ck = new Cookie("level", "orange");
+        response.addCookie(ck);
+        Cookie ck2 = new Cookie("roomNo", String.valueOf(roomNo));
+        response.addCookie(ck2);
+
+        response.sendRedirect(ctxPath + "/talk_view_orange.jsp");
+
+    }else{
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+    }
+%>
+```
+
+## 삭제
+
+```jsp
+<%@ page import="apple.Util" %>
+<%@ page import="java.sql.Connection" %>
+<%@ page import="java.sql.DriverManager" %>
+<%@ page import="java.sql.PreparedStatement" %>
+<%@ page import="java.sql.ResultSet" %>
+<%@ page import="apple.TalkRoomVO" %>
+<%@page %><%
+
+    //문자열 숫자 변환시에 에러 발생될 수 있으니 감안한 코드 : Util.parseInt
+    String ctxPath = request.getContextPath();
+    int roomNo = Util.parseInt(request.getParameter("roomNo"));
+    String pwd = request.getParameter("pwd");
+
+    if( roomNo == -1 || pwd == null || "".equals(pwd)){
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+        //sendRedirect 뒤에는 의미없으니 return
+        return;
+    }
+
+    Exception err = null;
+    TalkRoomVO vo = null;
+    try{
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:orcl","hr", "hr");
+        String sql = "select * from talk_room_t where room_no = ?";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, roomNo);
+        ResultSet rs = stmt.executeQuery();
+
+        if(rs.next()){
+            vo = new TalkRoomVO();
+            vo.setRoomNo(rs.getInt("room_no"));
+            vo.setApple(rs.getString("apple"));
+            vo.setBanana(rs.getString("banana"));
+            vo.setOrange(rs.getString("orange"));
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+    }catch (Exception e){
+        err = e;
+    }
+
+    System.out.println(vo);
+
+    if(err != null){
+        response.sendRedirect(ctxPath + "/error.jsp");
+        return;
+    }
+
+    if(vo == null){
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+        return;
+    }
+    else if(vo.getApple().equals(pwd)){
+        Cookie ck = new Cookie("level", "apple");
+        response.addCookie(ck);
+        Cookie ck2 = new Cookie("roomNo", String.valueOf(roomNo));
+        response.addCookie(ck2);
+
+        response.sendRedirect(ctxPath + "/talk_view_apple.jsp");
+    }else if(vo.getBanana().equals(pwd)){
+        Cookie ck = new Cookie("level", "banana");
+        response.addCookie(ck);
+        Cookie ck2 = new Cookie("roomNo", String.valueOf(roomNo));
+        response.addCookie(ck2);
+
+        response.sendRedirect(ctxPath + "/talk_view_banana.jsp");
+
+    }else if(vo.getOrange().equals(pwd)){
+        Cookie ck = new Cookie("level", "orange");
+        response.addCookie(ck);
+        Cookie ck2 = new Cookie("roomNo", String.valueOf(roomNo));
+        response.addCookie(ck2);
+
+        response.sendRedirect(ctxPath + "/talk_view_orange.jsp");
+
+    }else{
+        response.sendRedirect(ctxPath + "/talk_login.jsp");
+    }
+%>
+```
+
+## 간단한 연산 EL
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+${100 + 100}
+${50 > 100}
+${50 gt 100} <%-- gt: greater then --%>
+${50 >= 50}
+${50 ge 50} <%-- ge: greater equal --%>
+${50 < 50}
+${50 lt 50} <%-- gt: less then --%>
+
+${(true)&&(true)}
+${(true)&&(false)} <%-- 괄호 빼도 되지만 넣으면좋음 --%>
+${!(true)}
+${not (true)}
+
+${(100>50)? 'apple':'banana'}
+${(100>50)? 'apple':((50<40)?'banana':'kiwi')}
+
+</body>
+</html>
+
+```
+
+최근에 JSP는 간단한 연산을 ${...}을 이용하여 할 수 있는 기술을 포함했는데 이것을 EL 이라고한다
+
+EL(Expression Language)
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="true" %>
+```
+
+`isELIgnored="true"` 로 설정되면 EL을 무시하고 단순문자열로 인식하게됨
+
+```jsp
+<%@ page import="apple.TalkRoomVO" %>
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+         pageEncoding="EUC-KR" isELIgnored="false"%>
+<%
+    request.setAttribute("apple", 100);
+    request.setAttribute("ab", new int[]{1,2,3,4});
+
+    TalkRoomVO vo = new TalkRoomVO();
+    vo.setRoomNo(10101);
+    vo.setApple("청송사과");
+    vo.setBanana("제주바나나");
+
+    request.setAttribute("t", vo);
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="EUC-KR">
+    <title>Insert title here</title>
+</head>
+<body>
+${t.roomNo} ${t.apple} ${t.banana}
+${apple}
+${(apple>10)}
+${ab[0]} ${ab[1]} ${ab[2]} ${ab[3]}
+</body>
+</html>
+<%--
+   실제로 html 안은 복잡한 코드보다 단순한 코드가 훨씨많다.
+   그런 모든 작업을 EL로 처리가능하면 디자인 속도가 훨씬 빠를 것이다.
+   request.setAttribute 또는 session.setAttribute를 통해서 저장된 값은 키값을 이용해서 EL에서 사용이 가능하다.
+
+   정리. session, request, application 3개 객체는 모두
+   void setAttribute(String, Object),
+   Object getAttribute(String)
+   void removeAttribute(String)을 지원한다.
+
+   EL이 반응이 좋아서 보다 확장한 기능인 jstl을 지원하게 되었다.
+   jstl : 태그로 만든 언어 <if></if>와 유사
+
+ --%>
+```
+
+   SGML 에서 태그를 처음 도입
+   - 미 국방성에 문서를 전산화 할 수 있는 언어를 개발했다.
+   - MathML, MusicML, postscript 등 파생된 서브셋이 엄청 많다.
+   - postscript가 발전해서 pdf로 발전.
+   - 파생된 것들 중 가장 성공한 것이 XML, HTML 이다.
+
+태그의 특징
+
+1. 최 외곽의 태그는 단 하나만 존재해야 한다.(html 태그는 두번 안온다.)
+2. 태그는 중첩해서 선언하지 않는다. (<banana><apple></banana></apple> X) 
+3. 속성은 시작 태그에 선언한다. <body bgColor="red"></body>
+4. 속성은 key="value" 또는 key='value'로 선언되어야 한다. 단 ''안에 ''못온다(key='va'l'ue'는 안되고 key="va'l'ue"는 됨)
+5. 하나의 태그에서 속성은 두번 선언하지않는다.<body bgColor="red" bgColor="green"></body> x
+6. 시작 태그가 있으면 반드시 끝 태그가 있다. <apple></apple>과 같이 내용없는 경우 <apple/>로 씀
+
+## JSTL
+
+### for
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="jc"%>
+<%
+
+%>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<jc:forEach var="i" begin="0" end="4">
+    <jc:out value="${i}"/>
+</jc:forEach>
+</body>
+</html>
+```
+
+```
+0 1 2 3 4
+```
+
+jstl은 태그를 이용하여 만들어진 언어인데 el과 연동된다.
+
+태그에 익숙해진 디자이너에게는 이쪽이 인기를 끌었다.
+
+### if
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="jc"%>
+<%
+
+%>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<jc:forEach var="i" begin="0" end="4">
+    <jc:out value="${i}"/>
+    <jc:choose>
+        <jc:when test="${(i%3)==0}">apple</jc:when>
+        <jc:when test="${(i%3)==1}">banana</jc:when>
+        <jc:otherwise>orange</jc:otherwise>
+    </jc:choose>
+</jc:forEach>
+
+
+</body>
+</html>
+```
+
+```
+0 apple 1 banana 2 orange 3 apple 4 banana
+```
+
+### list와 연동
+
+```jsp
+<%
+    List<String> rl = new ArrayList<>();
+    rl.add("one");
+    rl.add("two");
+    rl.add("three");
+    rl.add("four");
+    request.setAttribute("rl", rl);
+%>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<table border="1">
+<jc:forEach var="vo" items="${rl}">
+    <tr>
+        <td>${vo}</td>
+    </tr>
+</jc:forEach>
+</table>
+```
+
+```
+one two three four
+```
+
+기존 jsp는 들여쓰기 정리가 안되지만 어려운 코드 구사가능
+
+jstl은 들여쓰기가 깔끔하지만 쓰는코드밖에 못쓴다.
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" import="apple.BangMyungVO, java.util.List" %>
+<%@ page import="apple.BangMyungDAO" %>
+<%@ page import="apple.BangMyungDAO_OracleImpl" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="l"%>
+<%
+    // 1.변수선언
+    List<BangMyungVO> rl = null;
+    Exception err = null;
+    // 2. DB연동
+    BangMyungDAO dao = new BangMyungDAO_OracleImpl();
+    try {
+        rl = dao.findAll();
+    } catch (Exception e) {
+        err = e;
+    }
+    // 3. 흐름 만들기
+    if (rl == null || err != null) {
+        session.setAttribute("error", err);
+        response.sendRedirect("/study/error.jsp");
+    } else {}
+    request.setAttribute("rl", rl);
+%>
+<html>
+<head>
+    <title>Title</title>
+
+</head>
+<body>
+<div>
+    <table border="1">
+        <l:forEach var="vo" varStatus="vs" items="${rl}">
+            <tr bgcolor="${(vs.count%2 != 0)?'#aabbcc':'#bbccdd'}">
+                <td>${vs.count}</td>
+                <td>${vo.no}</td>
+                <td>${vo.gul}</td>
+                <td>${vo.theTime}</td>
+            </tr>
+        </l:forEach>
+    </table>
+    <form method="post" action="/study/bangmyung_add.jsp">
+        <input type="text" name="gul"/>
+        <input type="submit"/>
+    </form>
+</div>
+</body>
+</html>
+```
+
+`vs.count` 는 `for(int i = 1 ; ... ; i ++)`의 i값과 같다
+
+간단한 로직은 EL로 구현이 가능하지만 복잡한건 못한다.
+
+java의 class 의 static 함수를 EL에서 사용 할 수 있다.
+
+- 이것을 이용하여 복잡한 코드를 EL에서 이용 할 수 있다.
 
