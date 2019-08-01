@@ -19,12 +19,13 @@ public class GuestBookDAO {
             preparedStatement = connection.prepareStatement("SELECT * FROM GUESTBOOK WHERE COMMENT_NO = ?");
             preparedStatement.setInt(1, commentNo);
             resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-
-            guestBookVO = new GuestBookVO();
-            guestBookVO.setCommentNo(resultSet.getInt("COMMENT_NO"));
-            guestBookVO.setContent(resultSet.getString("CONTENT"));
-            guestBookVO.setUpdateDate(resultSet.getString("UPDATE_DATE"));
+            // 없을시 null값 반환 되도록
+            if(resultSet.next()) {
+                guestBookVO = new GuestBookVO();
+                guestBookVO.setCommentNo(resultSet.getInt("COMMENT_NO"));
+                guestBookVO.setContent(resultSet.getString("CONTENT"));
+                guestBookVO.setUpdateDate(resultSet.getString("UPDATE_DATE"));
+            }
         } finally {
             if (resultSet != null)
                 try {
@@ -113,5 +114,30 @@ public class GuestBookDAO {
         }
     }
 
+    public void delete(Integer commentNo) throws SQLException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            connection = connectionMaker.getConnection();
 
+            preparedStatement = connection.prepareStatement("DELETE FROM GUESTBOOK WHERE COMMENT_NO = ?");
+            preparedStatement.setInt(1, commentNo);
+
+            preparedStatement.executeUpdate();
+
+        } finally {
+            if (preparedStatement != null)
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            if (connection != null)
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+        }
+    }
 }
