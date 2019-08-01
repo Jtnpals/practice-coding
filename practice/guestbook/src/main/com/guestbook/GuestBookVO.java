@@ -3,7 +3,7 @@ package com.guestbook;
 public class GuestBookVO {
     private Integer commentNo = null;
     private String content = null;
-    private String createDate = null;
+    private String updateDate = null;
 
     public Integer getCommentNo() {
         return commentNo;
@@ -21,11 +21,11 @@ public class GuestBookVO {
         this.content = content;
     }
 
-    public String getCreateDate() {
-        return createDate;
+    public String getUpdateDate() {
+        return updateDate;
     }
 
-    public void setCreateDate(String createDate) {
-        this.createDate = createDate;
+    public void setUpdateDate(String updateDate) {
+        this.updateDate = updateDate;
     }
 }

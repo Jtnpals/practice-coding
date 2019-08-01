@@ -27,7 +27,7 @@ public class GuestBookDAOTest {
         GuestBookVO guestBookVO = guestBookDAO.get(commentNo);
         assertEquals(commentNo, guestBookVO.getCommentNo());
         assertEquals(content, guestBookVO.getContent());
-        assertEquals(createDate, guestBookVO.getCreateDate());
+        assertEquals(createDate, guestBookVO.getUpdateDate());
     }
 
     @Test
@@ -36,10 +36,26 @@ public class GuestBookDAOTest {
         guestBookVO.setContent("새로운 글");
 
         Integer commentNo = guestBookDAO.insert(guestBookVO);
-        GuestBookVO insertedGuestbookVO = guestBookDAO.get(commentNo);
+        GuestBookVO insertedGuestBookVO = guestBookDAO.get(commentNo);
 
-        assertEquals(commentNo, insertedGuestbookVO.getCommentNo());
-        assertEquals(guestBookVO.getContent(), insertedGuestbookVO.getContent());
+        assertEquals(commentNo, insertedGuestBookVO.getCommentNo());
+        assertEquals(guestBookVO.getContent(), insertedGuestBookVO.getContent());
+    }
+
+    @Test
+    public void update() throws SQLException {
+        GuestBookVO guestBookVO = new GuestBookVO();
+        guestBookVO.setContent("새로운 글");
+
+        Integer commentNo = guestBookDAO.insert(guestBookVO);
+
+        guestBookVO.setCommentNo(commentNo);
+        guestBookVO.setContent("수정된 글");
+        guestBookDAO.update(guestBookVO);
+
+        GuestBookVO updatedGuestBookVO = guestBookDAO.get(commentNo);
+        assertEquals(guestBookVO.getCommentNo(), updatedGuestBookVO.getCommentNo());
+        assertEquals(guestBookVO.getContent(), updatedGuestBookVO.getContent());
     }
 
 }

@@ -24,7 +24,7 @@ public class GuestBookDAO {
             guestBookVO = new GuestBookVO();
             guestBookVO.setCommentNo(resultSet.getInt("COMMENT_NO"));
             guestBookVO.setContent(resultSet.getString("CONTENT"));
-            guestBookVO.setCreateDate(resultSet.getString("CREATE_DATE"));
+            guestBookVO.setUpdateDate(resultSet.getString("UPDATE_DATE"));
         } finally {
             if (resultSet != null)
                 try {
@@ -92,9 +92,9 @@ public class GuestBookDAO {
         PreparedStatement preparedStatement = null;
         try {
             connection = connectionMaker.getConnection();
-            preparedStatement = connection.prepareStatement("UPDATE GUESTBOOK SET CONTENT = ? UPDATE_DATE = SYSDATE where COMMNET_NO= ?");
+            preparedStatement = connection.prepareStatement("UPDATE GUESTBOOK SET CONTENT = ?, UPDATE_DATE = SYSDATE where COMMENT_NO= ?");
             preparedStatement.setString(1, guestBookVO.getContent());
-            preparedStatement.setLong(2, guestBookVO.getCommentNo());
+            preparedStatement.setInt(2, guestBookVO.getCommentNo());
 
             preparedStatement.executeUpdate();
         } finally {
