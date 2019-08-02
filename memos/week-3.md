@@ -2041,3 +2041,749 @@ java의 class 의 static 함수를 EL에서 사용 할 수 있다.
 
 - 이것을 이용하여 복잡한 코드를 EL에서 이용 할 수 있다.
 
+# Day5
+
+---
+
+## FileUpload
+
+```jsp
+<%--
+  Created by IntelliJ IDEA.
+  User: sumin
+  Date: 2019-08-02
+  Time: 오전 10:08
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+
+<%--
+   <input type="file"> 은 파일을 서버로 업로드 할때 사용한다.
+   이 때ㅡㄴㄴ 반드시 enctype="multipart/form-data" 을 사용한다.
+
+   fileup에 해당하는 서블릿은 cos.jar 파일의 multipartRequest 를
+      이용하여 업로드를 처리하는 것이 일번적이다.
+
+   기본적으로 chrome 은 접근권한이 제한되어있다. 그래서 권한요청을 해야한다.
+ --%>
+<form method ="POST" action="fileup" enctype="multipart/form-data">
+    <input type="text" name="title" size="20"/>
+    <input type="file" name="apple"/>
+    <input type="submit"/>
+    
+</form>
+
+</body>
+</html>
+
+```
+
+```java
+package apple;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class FileUpServlet extends HttpServlet {
+
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        String l = process(req);
+        System.out.println(l);
+    }
+
+    private String process(HttpServletRequest req) throws IOException{
+        byte[] buf = new byte[1024];
+        int len = 0;
+        StringBuffer sb = new StringBuffer();
+        InputStream in = req.getInputStream();
+        while ((len = in.read(buf)) != -1){
+            sb.append(new String(buf, 0, len));
+        }
+        in.close();
+
+        return sb.toString();
+    }
+}
+```
+
+request는 요청, 브라우저에서 서버로 전달하는 개념.
+
+request.getInputStream()을 통해 브라우저에서 서버로 전달되는 내용을 볼 수 있다.
+
+(이런저런 내용들이 막 모여있다.)
+
+
+
+## MultipartRequest
+
+이 내용을 재구성하는 기능이 cos.jar 파일의 MultipartRequest이다.
+
+```java
+package apple;
+
+import com.oreilly.servlet.MultipartRequest;
+import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class FileUpServlet extends HttpServlet {
+    private ServletContext application = null;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        application = config.getServletContext();
+
+    }
+
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+//        String l = process(req);
+//        System.out.println(l);
+        String l2 = process2(req);
+        System.out.println(l2);
+    }
+
+    private String process2(HttpServletRequest req) throws IOException {
+//        String path = req.getRealPath("/WEB-INF/fileup");
+        // fileup 디렉토리의 실제 저장위치(절대 경로) 값을파악한다.
+        String path = application.getRealPath("/WEB-INF/fileup");
+        System.out.println(path);
+
+        //cos.jar에서 제공되는 클래스
+        //DefaultFileRenamePolicy 는 이름이 겹칠때 이름 바꿔서 올려준다. null로 주면 기존의 값 덮어씀
+        //올릴 때  이름과 서버에 올려진 이름이 다를 수 있다.
+        MultipartRequest mpr = new MultipartRequest(req, path, 1024 * 1024 * 20, "UTF-8", new DefaultFileRenamePolicy());
+        //업로드한 원래 파일이름
+        String ofn = mpr.getOriginalFileName("apple");
+        //중첩되는 경우에 이름을 바꿔 저장하는이름
+        String fsn = mpr.getFilesystemName("apple");
+        System.out.println(ofn + ", " + fsn);
+
+        // MultipartRequest 쓰면 request.getParameter 못쓴다.
+        // 대신 MultipartRequest 안의 getParameter 쓴다.
+        // 한글처리도 내부에서 해주더라 ("UTF-8"로 설정해서)
+        String title = mpr.getParameter("title");
+        System.out.println(title);
+    }
+
+    private String process(HttpServletRequest req) throws IOException{
+        byte[] buf = new byte[1024];
+        int len = 0;
+        StringBuffer sb = new StringBuffer();
+        InputStream in = req.getInputStream();
+        while ((len = in.read(buf)) != -1){
+            sb.append(new String(buf, 0, len));
+        }
+        in.close(); //얘 클로즈되면 다른함수에서 호출하는 request도 끊어지는거같음
+
+        return sb.toString();
+    }
+}
+```
+
+```jsp
+<%--
+  Created by IntelliJ IDEA.
+  User: sumin
+  Date: 2019-08-02
+  Time: 오전 10:08
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+
+<%--
+   <input type="file"> 은 파일을 서버로 업로드 할때 사용한다.
+   이 때ㅡㄴㄴ 반드시 enctype="multipart/form-data" 을 사용한다.
+
+   fileup에 해당하는 서블릿은 cos.jar 파일의 multipartRequest 를
+      이용하여 업로드를 처리하는 것이 일번적이다.
+
+   기본적으로 chrome 은 접근권한이 제한되어있다. 그래서 권한요청을 해야한다.
+ --%>
+<form method ="POST" action="fileup" enctype="multipart/form-data">
+    <input type="text" name="title" size="20"/>
+    <input type="file" name="apple"/>
+    <input type="submit"/>
+    
+</form>
+
+</body>
+</html>
+
+```
+
+
+
+
+
+
+
+## Down
+
+```java
+package apple;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+public class FileDownServlet extends HttpServlet {
+    @Override
+    public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        String fsn = req.getParameter("fsn");
+        String ofn = req.getParameter("ofn");
+
+        if(ofn == null){
+            ofn = fsn;
+        }
+        String path = req.getServletContext().getRealPath("/WEB-INF/fileup");
+        //전송하기 이전에 동영상인지 사진인지 파일인지 미리 클라이언트에게 통보하는 기능
+        // application/octet-stream 과 같은 것을 MIME TYPE 이라고한다.
+        // 국제적으로 정해져 있다.
+        //application/octet-stream    . text/plain
+        res.setContentType("application/octet-stream");  //응답이 내보내지기 전에 쓰여져야한다.
+        //다운받으면서 저장되는 파일의 이름을 지정 할 수 있다.
+        res.setHeader("content-disposition", "attachment;filename=" + ofn);
+        //서버에 보관중인 파일을 읽어서 브라우저로 내보내는 전송 프로그램
+        InputStream in = new FileInputStream(path + "\\" + fsn);
+        OutputStream out =  res.getOutputStream();
+
+        byte[] buf = new byte[1024 * 4];
+        int len = 0;
+        while ((len = in.read(buf)) != -1){
+            out.write(buf, 0, len);
+            out.flush();
+        }
+        out.close();
+        in.close();
+    }
+}
+```
+
+```jsp
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="EUC-KR"%>
+<!DOCTYPE html>
+<html>
+<body>
+<%--WEB-INF는 브라우저가 접근이 불가능하다.--%>
+<a href="WEB-INF/fileup/bootstrap-reboot.css">filedown</a>
+<a href="filedn?fsn=bootstrap-reboot.css">down</a>
+<a href="filedn?ofn=bootstrap-reboot.css&fsn=bootstrap-reboot3.css">down2</a>
+</body>
+</html>
+```
+
+
+
+## Forward, Redirect
+
+![forward-redirect](..\images\forward-redirect.png)
+
+forward 다른곳(context)에있어야 가능
+
+1에서 2로 데이터 전달시 바로 넘김
+
+redirect 다른곳(context)에있어도 가능
+
+1에서 2로 데이터 전달시 session 사용해서 넘김
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+HelloWorld
+<%
+    int i = 0;
+
+    if( i == 0 ) {
+        // Test124_1.jsp로 뛰는데, 주소창의 주소는 그대로이다.
+        // sendRedirect는 주소가 바뀐다.
+        // forward는 다음페이지에 뭔가 바로 전달이가능 (전화돌리기)
+        // redirect는 바로안됨
+        //foward는 같은 context에서만 가능하고
+        //request에서 심어서 보내면 받는 쪽에서는 꺼내어 쓸 수 있다.
+        request.setAttribute("메세지", "스토커 요주의");
+        RequestDispatcher rd = request.getRequestDispatcher("/Test125_1.jsp");
+        rd.forward(request, response);
+    }else{
+        String ctxPath = request.getContextPath();
+
+        //브라우저로 하여금 새로운 요청을 하도록 지시한다.
+        // 응답의 맨 앞의 헤더부분을 이용한다. 주의 : 응답의 내용이 만들어진 이후에는 제대로 동작하지 않을 수 있다.
+        //WAS마다 차이는 있다.
+        //얘는 주소창이 바뀜
+        //request.setAttribute("메세지", "스토커 요주의"); // 안읽혀짐
+        response.sendRedirect(ctxPath + "/Test_125_1.jsp");
+    }
+
+%>
+```
+
+
+
+## MVC
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" import="apple.BangMyungVO, java.util.List" %>
+<%@ page import="apple.BangMyungDAO" %>
+<%@ page import="apple.BangMyungDAO_OracleImpl" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="l"%>
+<%
+    // 1.변수선언
+    List<BangMyungVO> rl = null;
+    Exception err = null;
+    // 2. DB연동
+    BangMyungDAO dao = new BangMyungDAO_OracleImpl();
+    try {
+        rl = dao.findAll();
+    } catch (Exception e) {
+        err = e;
+    }
+    // 3. 흐름 만들기
+    if (rl == null || err != null) {
+        session.setAttribute("error", err);
+        response.sendRedirect("/study/error.jsp");
+    } else {
+    request.setAttribute("rl", rl);
+    RequestDispatcher rd = request.getRequestDispatcher("/Test126_1.jsp");
+    rd.forward(request, response);}
+%>
+```
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="l"%>
+<html>
+<head>
+    <title>Title</title>
+
+</head>
+<body>
+<div>
+    <table border="1">
+        <l:forEach var="vo" varStatus="vs" items="${rl}">
+            <tr bgcolor="${(vs.count%2 != 0)?'#aabbcc':'#bbccdd'}">
+                <td>${vs.count}</td>
+                <td>${vo.no}</td>
+                <td>${vo.gul}</td>
+                <td>${vo.theTime}</td>
+            </tr>
+        </l:forEach>
+    </table>
+    <form method="post" action="/study/bangmyung_add.jsp">
+        <input type="text" name="gul"/>
+        <input type="submit"/>
+    </form>
+</div>
+</body>
+</html>
+```
+
+Model(데이터) View(보이는 부분) Controller(흐름, 제어, 판단)
+
+
+
+mvc 패키지 만들고 Controller 인터페이스 생성
+
+MVC 정리.
+
+```java
+package bangmyung.mvc;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public interface Controller {
+    public String handleRequest(HttpServletRequest req, HttpServletResponse res) throws Exception;
+}
+```
+
+```java
+package bangmyung.mvc;
+
+import apple.BangMyungDAO;
+import apple.BangMyungDAO_OracleImpl;
+import apple.BangMyungVO;
+import apple.Util;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@RequestMapping("/apple_add2.do")
+public class CtrlAdd2 implements Controller {
+
+    @Override
+    public String handleRequest(HttpServletRequest req, HttpServletResponse res) throws Exception {
+        String gul = Util.h(req.getParameter("gul"));
+        BangMyungVO vo = new BangMyungVO();
+        vo.setGul(gul);
+        BangMyungDAO dao = new BangMyungDAO_OracleImpl();
+        dao.add(vo);
+    return "redirect:/apple_list.do";
+    }
+}
+```
+
+```java
+package bangmyung.mvc;
+
+import apple.BangMyungDAO;
+import apple.BangMyungDAO_OracleImpl;
+import apple.BangMyungVO;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+
+@RequestMapping("/apple_list.do")
+public class CtrlList implements Controller {
+
+    @Override
+    public String handleRequest(HttpServletRequest req, HttpServletResponse res) throws Exception {
+        BangMyungDAO dao = new BangMyungDAO_OracleImpl();
+        List<BangMyungVO> rl = dao.findAll();
+
+        req.setAttribute("rl", rl);
+        return "/apple_list.jsp";
+    }
+}
+```
+
+```java
+package bangmyung.mvc;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Map;
+
+public class DispatcherServlet extends HttpServlet{
+
+    private Map<String, Controller> mapp = null;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+
+        mapp = new Hashtable<String, Controller>();
+
+        String cs = "bangmyung.mvc.CtrlList,bangmyung.mvc.CtrlAdd2";
+        String[] cs2 = cs.split(",");
+        for(int i = 0 ; i<cs2.length;i++) {
+            try {
+                Class<?> cls= Class.forName(cs2[i]);
+
+                RequestMapping an = cls.getAnnotation(RequestMapping.class);
+                Controller value = (Controller)cls.newInstance(); //얘네들이 Controller 상속받아서 가능
+                String key = an.value(); //어노테이션에서 지정한 밸류값
+
+                mapp.put(key, value);
+
+            }
+            catch(Exception e) {
+
+            }
+            System.out.println(mapp.toString());
+        }
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String ctxPath = request.getContextPath();  //  /study
+        String uri = request.getRequestURI();  //  /study/something.do
+
+        uri = uri.substring(ctxPath.length());//  /something.do
+        System.out.println(uri);
+
+        Controller ctrl = mapp.get(uri);
+        if(ctrl == null){
+            System.out.println("해당 요청은 미등록입니다.");
+            return;
+        }
+
+        try {
+            String l = ctrl.handleRequest(request, response);
+            if(l ==null){
+
+            }else if(l.startsWith("redirect:")){//리다이렉트로 들어올 시 리다이렉트
+                response.sendRedirect(ctxPath + l.substring(9)); //redirect: 해서 9
+            }else{// 리다이렉트 아닐 시 포워드
+                RequestDispatcher rd = request.getRequestDispatcher(l);
+                rd.forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+```
+
+```java
+package bangmyung.mvc;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RequestMapping {
+    public String value();
+}
+```
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="l"%>
+<%
+%>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<table>
+    <l:forEach var = "vo" items="${rl}">
+    <tr>
+        <td>${vo.no}</td>
+        <td>${vo.gul}</td>
+        <td>${vo.theTime}</td>
+    </tr>
+    </l:forEach>
+</table>
+<form method="POST" action="apple_add2.do">
+    <input type="text" name="gul" size=""55/>
+    <input type="submit">
+</form>
+</body>
+</html>
+```
+
+좀더 보완
+
+```xml
+ <servlet>
+        <servlet-name>dispatcher</servlet-name>
+        <servlet-class>bangmyung.mvc.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>controllers</param-name>
+            <param-value>
+                bangmyung.mvc.CtrlList,
+                bangmyung.mvc.CtrlAdd2
+            </param-value>
+        </init-param>
+    </servlet>
+```
+
+```java
+package bangmyung.mvc;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Map;
+
+public class DispatcherServlet extends HttpServlet{
+
+    private Map<String, Controller> mapp = null;
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        mapp = new Hashtable<String, Controller>();
+        String cs = config.getInitParameter("controllers");
+        String[] cs2 = cs.split(",");
+        for(int i = 0 ; i<cs2.length;i++) {
+            try {
+                Class<?> cls= Class.forName(cs2[i].trim()); //공백제거
+
+                RequestMapping an = cls.getAnnotation(RequestMapping.class);
+                Controller value = (Controller)cls.newInstance(); //얘네들이 Controller 상속받아서 가능
+                String key = an.value(); //어노테이션에서 지정한 밸류값
+
+                mapp.put(key, value);
+            }
+            catch(Exception e) {
+            }
+            System.out.println(mapp.toString());
+        }
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String ctxPath = request.getContextPath();  //  /study
+        String uri = request.getRequestURI();  //  /study/something.do
+
+        uri = uri.substring(ctxPath.length());//  /something.do
+        System.out.println(uri);
+
+        Controller ctrl = mapp.get(uri);
+        if(ctrl == null){
+            System.out.println("해당 요청은 미등록입니다.");
+            return;
+        }
+        try {
+            String l = ctrl.handleRequest(request, response);
+            if(l ==null){
+
+            }else if(l.startsWith("redirect:")){//리다이렉트로 들어올 시 리다이렉트
+                response.sendRedirect(ctxPath + l.substring(9)); //redirect: 해서 9
+            }else{// 리다이렉트 아닐 시 포워드
+                RequestDispatcher rd = request.getRequestDispatcher(l);
+                rd.forward(request, response);
+            }
+        } catch (Exception e) {//여기서 에러를넘기기떄문에 모든페이지에서 에러넘기는 부분을 생략가능
+            HttpSession session = request.getSession();
+            session.setAttribute("err", e);
+            e.printStackTrace();
+            response.sendRedirect(ctxPath + "/apple_err.jsp"); //에러 넘기기
+        }
+    }
+}
+```
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %><%
+    Exception err = (Exception)session.getAttribute("err");
+    StackTraceElement[] errs = err.getStackTrace();
+%>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body><%for( int i = 0; i<errs.length ; i++){
+  %><%=errs.toString()%><br/><%
+}
+%>
+
+</body>
+</html><%
+    //session.removeAttribute("err");  //리로드시 다시 에러생길수 있으니.일단 주석
+%>
+```
+
+## URL
+
+```java
+package main;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+
+public class Test126 {
+    public static void main(String[] args) throws Exception{
+        // java.net.URL은 이것 자체가 작은 웹브라우저의 역할을 한다.
+        //요청을 날리고 그에 해당하는 응답을 받아들인다.
+        URL rl = new URL("https://www.naver.com/");
+        URLConnection ucon = rl.openConnection();
+        InputStream in = ucon.getInputStream();
+        //byte단위 입출력을 char단위로
+        BufferedReader bin = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        String l = null;
+        while ((l = bin.readLine()) != null){
+            System.out.println(l);
+        }
+        in.close();
+    }
+}
+```
+
+안드로이드앱에서 버튼누르면 오늘의 배송정보가 넘어오는 ??
+
+배송정보는 서버에 올라와 있다.
+
+서버에 존재하는 배송정보를 다운받는 역할을 한다.
+
+소켓으로 다 짜는것이안라 http 프로토콜로 서버와 통신할때는 주로 이 클래스를 이용한다.
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<% String[] l = {"사과", "귤", "배", "토마토"};
+    String pw = request.getParameter("pw");
+
+    if (pw.equals("1234")) {
+        String nl = "\r\n";   //줄바꿈 표시
+        for (int i = 0; i < l.length; i++) {
+%><%=l[i]%><%=nl%><%
+    }
+} else {
+%> 암호틀림<%
+    }
+%>
+```
+
+```java
+package main;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+
+public class Test126 {
+    public static void main(String[] args) throws Exception{
+        // java.net.URL은 이것 자체가 작은 웹브라우저의 역할을 한다.
+        URL rl = new URL("http://192.168.2.70:8081/study/Test127.jsp?pw=1234"); //암호가 1234일때
+        URLConnection ucon = rl.openConnection();
+        InputStream in = ucon.getInputStream();
+        //byte단위 입출력을 char단위로
+        BufferedReader bin = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        String l = null;
+        while ((l = bin.readLine()) != null){
+            System.out.println(l);
+        }
+        in.close();
+    }
+}
+
+```
+
+앱 같은 경우에서 서버로부터 많은 데이터를 다운받아야 할 경우에 URL 클래스를 이용하여 JSP파일로부터 정보를 다운받는다.
+
+이게 워낙 많이 쓰이다 보니 이를 강화한 오픈소스 라이브러리가 등장.
+
+apache http client 프로젝트. (안드로이드의 http기반 표준 통신 수단)
+
+구글에서 httpclient-4.4.jar 을 쳐서 다운
+
+https://jar-download.com
+
+ 사이트에서 의존성관련해서 jar 다운받기 좋음
+
