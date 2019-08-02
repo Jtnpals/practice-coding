@@ -45,14 +45,12 @@ public class JdbcContext {
         jdbcContextForUpdate(statementStrategy);
     }
 
-
-
     GuestBookVO jdbcContextForGet(StatementStrategy statementStrategy) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         GuestBookVO guestBookVO = null;
-        try {
+        try{
             connection = connectionMaker.getConnection();
             preparedStatement = statementStrategy.makeConnection(connection);
 
@@ -65,24 +63,7 @@ public class JdbcContext {
                 guestBookVO.setUpdateDate(resultSet.getString("UPDATE_DATE"));
             }
         } finally {
-            if (resultSet != null)
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            if (preparedStatement != null)
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            if (connection != null)
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+            closeFinally(connection, preparedStatement, resultSet);
         }
 
         return guestBookVO;
@@ -103,28 +84,10 @@ public class JdbcContext {
 
             commentNo = Math.toIntExact(resultSet.getLong(1));
         } finally {
-            if (resultSet != null)
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            if (preparedStatement != null)
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            if (connection != null)
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+            closeFinally(connection, preparedStatement, resultSet);
         }
         return commentNo;
     }
-
 
     void jdbcContextForUpdate(StatementStrategy statementStrategy) throws SQLException {
         Connection connection = null;
@@ -148,5 +111,26 @@ public class JdbcContext {
                     e.printStackTrace();
                 }
         }
+    }
+
+    private void closeFinally(Connection connection, PreparedStatement preparedStatement, ResultSet resultSet) {
+        if (resultSet != null)
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        if (preparedStatement != null)
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        if (connection != null)
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
     }
 }
