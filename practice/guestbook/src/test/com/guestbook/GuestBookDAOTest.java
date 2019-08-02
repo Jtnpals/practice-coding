@@ -8,6 +8,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuestBookDAOTest {
     private GuestBookDAO guestBookDAO;
@@ -70,6 +72,14 @@ public class GuestBookDAOTest {
 
         GuestBookVO deletedProduct = guestBookDAO.get(commentNo);
         assertNull(deletedProduct);
+    }
+
+    @Test
+    public void findAll() throws SQLException{
+        ArrayList<GuestBookVO> list = (ArrayList<GuestBookVO>) guestBookDAO.findAll();
+        for(GuestBookVO arrayList : list){
+            System.out.println(arrayList.getContent());
+        }
     }
 
 }

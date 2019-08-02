@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JdbcContext {
     final ConnectionMaker connectionMaker;
@@ -16,7 +18,7 @@ public class JdbcContext {
         StatementStrategy statementStrategy = connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             for (int i = 0; i < params.length; i++) {
-                preparedStatement.setObject(i+1, params[i]);
+                preparedStatement.setObject(i + 1, params[i]);
             }
             return preparedStatement;
         };
@@ -27,7 +29,7 @@ public class JdbcContext {
         StatementStrategy statementStrategy = connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(sql, new String[]{"COMMENT_NO"});
             for (int i = 0; i < params.length; i++) {
-                preparedStatement.setObject(i+1, params[i]);
+                preparedStatement.setObject(i + 1, params[i]);
             }
             return preparedStatement;
         };
@@ -38,25 +40,30 @@ public class JdbcContext {
         StatementStrategy statementStrategy = connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             for (int i = 0; i < params.length; i++) {
-                preparedStatement.setObject(i+1, params[i]);
+                preparedStatement.setObject(i + 1, params[i]);
             }
             return preparedStatement;
         };
         jdbcContextForUpdate(statementStrategy);
     }
 
-    GuestBookVO jdbcContextForGet(StatementStrategy statementStrategy) throws SQLException {
+    List<GuestBookVO> findAll(String sql) throws SQLException{
+        StatementStrategy statementStrategy = connection -> connection.prepareStatement(sql);
+        return jdbcContextForFindAll(statementStrategy);
+    }
+
+    private GuestBookVO jdbcContextForGet(StatementStrategy statementStrategy) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         GuestBookVO guestBookVO = null;
-        try{
+        try {
             connection = connectionMaker.getConnection();
             preparedStatement = statementStrategy.makeConnection(connection);
 
             resultSet = preparedStatement.executeQuery();
             // 없을시 null값 반환 되도록
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 guestBookVO = new GuestBookVO();
                 guestBookVO.setCommentNo(resultSet.getInt("COMMENT_NO"));
                 guestBookVO.setContent(resultSet.getString("CONTENT"));
@@ -69,7 +76,29 @@ public class JdbcContext {
         return guestBookVO;
     }
 
-    Integer jdbcContextInsert(StatementStrategy statementStrategy) throws SQLException {
+    private List<GuestBookVO> jdbcContextForFindAll(StatementStrategy statementStrategy) throws SQLException{
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        List<GuestBookVO> list = new ArrayList<>();
+        try {
+            connection = connectionMaker.getConnection();
+            preparedStatement = statementStrategy.makeConnection(connection);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()){
+                GuestBookVO guestBookVO = new GuestBookVO();
+                guestBookVO.setCommentNo(resultSet.getInt("COMMENT_NO"));
+                guestBookVO.setContent(resultSet.getString("CONTENT"));
+                guestBookVO.setUpdateDate(resultSet.getString("UPDATE_DATE"));
+                list.add(guestBookVO);
+            }
+        } finally {
+            closeFinally(connection, preparedStatement, resultSet);
+        }
+        return list;
+    }
+
+    private Integer jdbcContextInsert(StatementStrategy statementStrategy) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         Integer commentNo = null;
@@ -89,7 +118,7 @@ public class JdbcContext {
         return commentNo;
     }
 
-    void jdbcContextForUpdate(StatementStrategy statementStrategy) throws SQLException {
+    private void jdbcContextForUpdate(StatementStrategy statementStrategy) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         try {
@@ -114,23 +143,27 @@ public class JdbcContext {
     }
 
     private void closeFinally(Connection connection, PreparedStatement preparedStatement, ResultSet resultSet) {
-        if (resultSet != null)
+        if (resultSet != null) {
             try {
                 resultSet.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        if (preparedStatement != null)
+        }
+        if (preparedStatement != null) {
             try {
                 preparedStatement.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        if (connection != null)
+        }
+        if (connection != null) {
             try {
                 connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
     }
+
 }
