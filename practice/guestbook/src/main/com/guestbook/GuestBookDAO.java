@@ -1,7 +1,6 @@
 package com.guestbook;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 
 public class GuestBookDAO {

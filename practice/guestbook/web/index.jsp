@@ -11,6 +11,6 @@
     <title>$Title$</title>
   </head>
   <body>
-  $END$
+  <a href="guestbook_list.do">Guest Book</a>
   </body>
 </html>
