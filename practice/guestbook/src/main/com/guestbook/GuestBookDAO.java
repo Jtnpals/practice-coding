@@ -16,8 +16,9 @@ public class GuestBookDAO {
         GuestBookVO guestBookVO = null;
         try {
             connection = connectionMaker.getConnection();
-            preparedStatement = connection.prepareStatement("SELECT * FROM GUESTBOOK WHERE COMMENT_NO = ?");
-            preparedStatement.setInt(1, commentNo);
+            StatementStrategy statementStrategy = new GetGuestVOStatementStrategy(commentNo);
+            preparedStatement = statementStrategy.makeConnection(connection);
+
             resultSet = preparedStatement.executeQuery();
             // 없을시 null값 반환 되도록
             if(resultSet.next()) {
@@ -57,8 +58,8 @@ public class GuestBookDAO {
         ResultSet resultSet = null;
         try {
             connection = connectionMaker.getConnection();
-            preparedStatement = connection.prepareStatement("INSERT INTO GUESTBOOK (COMMENT_NO, CONTENT, UPDATE_DATE) VALUES (SEQ_GUESTBOOK.NEXTVAL, ?, SYSDATE)", new String[]{"COMMENT_NO"});
-            preparedStatement.setString(1, guestBookVO.getContent());
+            StatementStrategy statementStrategy = new InsertGuestVOStatementStrategy(guestBookVO);
+            preparedStatement = statementStrategy.makeConnection(connection);
 
             preparedStatement.executeUpdate();
             resultSet = preparedStatement.getGeneratedKeys();
@@ -93,9 +94,8 @@ public class GuestBookDAO {
         PreparedStatement preparedStatement = null;
         try {
             connection = connectionMaker.getConnection();
-            preparedStatement = connection.prepareStatement("UPDATE GUESTBOOK SET CONTENT = ?, UPDATE_DATE = SYSDATE where COMMENT_NO= ?");
-            preparedStatement.setString(1, guestBookVO.getContent());
-            preparedStatement.setInt(2, guestBookVO.getCommentNo());
+            StatementStrategy statementStrategy = new UpdateGuestbookVOStatmentStrategy(guestBookVO);
+            preparedStatement = statementStrategy.makeConnection(connection);
 
             preparedStatement.executeUpdate();
         } finally {
@@ -120,8 +120,8 @@ public class GuestBookDAO {
         try {
             connection = connectionMaker.getConnection();
 
-            preparedStatement = connection.prepareStatement("DELETE FROM GUESTBOOK WHERE COMMENT_NO = ?");
-            preparedStatement.setInt(1, commentNo);
+            StatementStrategy statementStrategy = new DeleteGuestbookVOStatementStrategy(commentNo);
+            preparedStatement = statementStrategy.makeConnection(connection);
 
             preparedStatement.executeUpdate();
 
