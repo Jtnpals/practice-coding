@@ -12,6 +12,40 @@ public class JdbcContext {
         this.connectionMaker = connectionMaker;
     }
 
+    GuestBookVO queryForObject(String sql, Object[] params) throws SQLException {
+        StatementStrategy statementStrategy = connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                preparedStatement.setObject(i+1, params[i]);
+            }
+            return preparedStatement;
+        };
+        return jdbcContextForGet(statementStrategy);
+    }
+
+    Integer insert(String sql, Object[] params) throws SQLException {
+        StatementStrategy statementStrategy = connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, new String[]{"COMMENT_NO"});
+            for (int i = 0; i < params.length; i++) {
+                preparedStatement.setObject(i+1, params[i]);
+            }
+            return preparedStatement;
+        };
+        return jdbcContextInsert(statementStrategy);
+    }
+
+    void update(String sql, Object[] params) throws SQLException {
+        StatementStrategy statementStrategy = connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                preparedStatement.setObject(i+1, params[i]);
+            }
+            return preparedStatement;
+        };
+        jdbcContextForUpdate(statementStrategy);
+    }
+
+
 
     GuestBookVO jdbcContextForGet(StatementStrategy statementStrategy) throws SQLException {
         Connection connection = null;
