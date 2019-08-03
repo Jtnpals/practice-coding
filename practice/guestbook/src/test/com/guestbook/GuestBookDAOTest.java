@@ -22,9 +22,9 @@ public class GuestBookDAOTest {
 
     @Test
     public void get() throws SQLException {
-        Integer commentNo = 2;
-        String content = "가나다라";
-        String createDate = "2019-08-01 20:52:43.0";
+        Integer commentNo = 3;
+        String content = "새로운 글";
+        String createDate = "2019-08-03 05:08:26.0";
 
         GuestBookVO guestBookVO = guestBookDAO.get(commentNo);
         assertEquals(commentNo, guestBookVO.getCommentNo());

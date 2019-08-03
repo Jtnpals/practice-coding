@@ -9,9 +9,7 @@
         <webroots>
           <root url="file://$MODULE_DIR$/web" relative="/" />
         </webroots>
-        <sourceRoots>
-          <root url="file://$MODULE_DIR$/src/main" />
-        </sourceRoots>
+        <sourceRoots />
       </configuration>
     </facet>
   </component>
@@ -23,8 +21,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="exlib" level="project" />
-    <orderEntry type="library" name="tomcat8" level="project" />
+    <orderEntry type="library" name="extra" level="project" />
     <orderEntry type="library" name="jstl" level="project" />
+    <orderEntry type="library" name="tomcat8" level="project" />
+    <orderEntry type="library" name="ojdbc6" level="project" />
   </component>
 </module>
