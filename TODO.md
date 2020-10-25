@@ -8,9 +8,9 @@
 
 ~~Pycharm 설치/ Pro Activate~~
 
-Amazon Web Service 가입
+~~Amazon Web Service 가입~~
 
-Gabia 미리가입
+~~Gabia 미리가입~~
 
 ---
 
