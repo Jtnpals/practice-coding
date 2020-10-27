@@ -30,7 +30,7 @@
 
 ### 3. Chpater 2
 
-Javascript 소개
+~~Javascript 소개~~
 
 Javascript 연습
 
