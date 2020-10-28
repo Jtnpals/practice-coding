@@ -44,9 +44,9 @@ Ajax
 
 ### 4. Chpater 3
 
-Python
+~~Python~~
 
-파이썬 응용문제
+~~파이썬 응용문제~~
 
 파이썬 패키지
 
