@@ -48,3 +48,5 @@ result2[1]; // com
 
 // 한 줄로 쓸 수도 있다.
 myemail.split("@")[1].split(".")[0];
+
+console.log(`안녕하세요 ${myemail}, ${result2}`);
