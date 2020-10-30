@@ -32,13 +32,13 @@
 
 ~~Javascript 소개~~
 
-Javascript 연습
+~~Javascript 연습~~
 
-jQuery
+~~jQuery~~
 
 서버-클라이언트 통신
 
-Ajax 
+Ajax
 
 ---
 
@@ -79,8 +79,3 @@ Flask
 서버 완성
 
 ---
-
-
-
-
-
