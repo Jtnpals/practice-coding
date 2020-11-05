@@ -80,9 +80,9 @@
 
 ---
 
-jquery
+~~jquery~~
 
-ajax
+~~ajax~~
 
 python
 

@@ -1,2 +1,0 @@
-# practice-swjungle
-sw jungle
