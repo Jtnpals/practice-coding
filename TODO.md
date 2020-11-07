@@ -84,8 +84,8 @@
 
 ~~ajax~~
 
-bootstrap4
+~~bootstrap4~~
 
-python
+~~python~~
 
-flask
+~~flask~~
