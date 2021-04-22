@@ -5,3 +5,5 @@
 ### 5. `$ python manage.py creatsuperuser`
 ### 6. `$ python manage.py runserver`
 ### 7. `$ python manage.py 8080`  (초기값 8000)
+### 8. `$ python managy.py makemigrations <AppName>`
+### 9. `$ python managy.py sqlmigrate <AppName> 0001`
