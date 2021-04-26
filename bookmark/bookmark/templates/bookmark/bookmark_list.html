@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<div class="btn-group">
+    <a href="#" class="btn btn-info">Add Bookmark</a>
+</div>
+<p>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Site</th>
+            <th scope="col">URL</th>
+            <th scope="col">Modify</th>
+            <th scope="col">Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for bookmark in object_list %}
+        <tr>
+            <td>{{forloop.counter}}</td>
+            <td><a href="#">{{bookmark.site_name}}</a></td>
+            <td><a href="{{bookmark.url}}" target="_blank">{{bookmark.url}}</a></td>
+            <td><a href="#" class="btn btn-success sm">Modify</a></td>
+            <td><a href="#" class="btn btn-delete sm">Modify</a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</p>
+
+</body>
+</html>
