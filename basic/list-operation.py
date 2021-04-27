@@ -73,3 +73,10 @@ print('a - ', a)
 while a:
     l = a.pop()
     print(2 == l)
+
+# list comprehension
+o_to_h = [x for x  in range(1,101)]
+print(o_to_h)
+
+odd = [x for x in range(1,101) if x % 2 != 0]
+print(odd)
