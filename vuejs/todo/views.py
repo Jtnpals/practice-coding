@@ -1,3 +1,6 @@
+from django.shortcuts import render
+from django.views.decorators.http import require_POST
+
 from todo.models import Todo
 from django.http import JsonResponse
 
@@ -17,6 +20,7 @@ from .forms import TodoForm
 
 
 @csrf_exempt
+@require_POST
 def todo_save(requset):
     if requset.body:
         data = json.loads(requset.body)
@@ -29,3 +33,6 @@ def todo_save(requset):
                 if form.is_valid():
                     form.save()
     return JsonResponse({})
+
+def index(request):
+    return render(request, 'todo/list.html')
