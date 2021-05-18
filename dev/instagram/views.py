@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404
 # Create your views here.
 from instagram.models import Post
 
-post_list = ListView.as_view(model=Post)
+post_list = ListView.as_view(model=Post, paginate_by=10)
 
 
 # def post_list(request):
@@ -30,6 +30,7 @@ post_list = ListView.as_view(model=Post)
 
 class PostDetailView(DetailView):
     model = Post
+
     # queryset = Post.objects.filter(is_public=True)
 
     def get_queryset(self):
