@@ -11,7 +11,7 @@ app_name = 'instagram'
 
 urlpatterns = [
     path('', views.post_list, name='post_list'),
-    path('<int:pk>/', views.post_detail),
+    path('<int:pk>/', views.post_detail, name='post_detail'),
     # path('archives/<year:year>/', views.archives_year),
     # re_path(r'archives/(?P<year>20\d{2})/', views.archives_year),
     # re_path(r'(?P<pk>\d+)/$', views.post_detail),
