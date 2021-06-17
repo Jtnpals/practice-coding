@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpRequest, Http404
@@ -8,6 +9,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 # Create your views here.
 from instagram.models import Post
 from instagram.forms import PostForm
+
 
 # post_list = login_required(ListView.as_view(model=Post, paginate_by=10))
 # @method_decorator(login_required, name='dispatch')
@@ -61,14 +63,38 @@ post_archive = ArchiveIndexView.as_view(model=Post, date_field='created_at', pag
 post_archive_year = YearArchiveView.as_view(model=Post, date_field='created_at', make_object_list=True)
 
 
+@login_required
 def post_new(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
             post = form.save()
             return redirect(post)
     else:
         form = PostForm()
+    return render(request, 'instagram/post_form.html', {
+        'form': form,
+    })
+
+
+@login_required
+def post_edit(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    #나중에 데코레이터로 만들면 좋음
+    if post.author != request.user:
+        messages.error(request, '작성자만 수정가능')
+        return redirect(post)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            post.save()
+            return redirect(post)
+    else:
+        form = PostForm(instance=post)
     return render(request, 'instagram/post_form.html', {
         'form': form,
     })
