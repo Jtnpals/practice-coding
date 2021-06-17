@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 
 from instagram.models import Post
@@ -9,3 +11,9 @@ class PostForm(forms.ModelForm):
         fields = [
             'message', 'photo', 'tag_set', 'is_public',
         ]
+
+    def clean_message(self):
+        message = self.cleaned_data.get('message')
+        if message:
+            message = re.sub(r'[a-zA-Z+]', '', message)
+        return message

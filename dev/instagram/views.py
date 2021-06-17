@@ -83,7 +83,7 @@ def post_new(request):
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
 
-    #나중에 데코레이터로 만들면 좋음
+    # 나중에 데코레이터로 만들면 좋음
     if post.author != request.user:
         messages.error(request, '작성자만 수정가능')
         return redirect(post)
@@ -98,3 +98,12 @@ def post_edit(request, pk):
     return render(request, 'instagram/post_form.html', {
         'form': form,
     })
+
+
+@login_required
+def post_delete(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    if request.method == 'POST':
+        post.delete()
+        return redirect("instagram:post_list")
+    return render(request, 'instagram/post_confirm_delete.html', {'post': post})
