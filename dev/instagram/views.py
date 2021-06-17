@@ -3,11 +3,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpRequest, Http404
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView, ArchiveIndexView, YearArchiveView
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 
 # Create your views here.
 from instagram.models import Post
-
+from instagram.forms import PostForm
 
 # post_list = login_required(ListView.as_view(model=Post, paginate_by=10))
 # @method_decorator(login_required, name='dispatch')
@@ -59,3 +59,16 @@ post_detail = PostDetailView.as_view()
 post_archive = ArchiveIndexView.as_view(model=Post, date_field='created_at', paginate_by=10)
 
 post_archive_year = YearArchiveView.as_view(model=Post, date_field='created_at', make_object_list=True)
+
+
+def post_new(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save()
+            return redirect(post)
+    else:
+        form = PostForm()
+    return render(request, 'instagram/post_form.html', {
+        'form': form,
+    })
