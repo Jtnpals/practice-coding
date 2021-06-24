@@ -35,7 +35,15 @@
                 <a class="me-3 py-2 text-dark text-decoration-none" href="#">사람찾기</a>
                 <a class="me-3 py-2 text-dark text-decoration-none" href="#">활동피드</a>
                 <a class="me-3 py-2 text-dark text-decoration-none" href="#">{{ user }}</a>
-                <a class="me-3 py-2 text-dark text-decoration-none" href="#">계정</a>
+                  {% if user.profile %}
+                      <a class="me-3 py-2 text-dark text-decoration-none" href="{% url 'profile_edit' %}">
+                      <img src="{{ user.profile.url }}" alt="" style="width: 30px">
+                      </a>
+                  {% else %}
+                      <a class="me-3 py-2 text-dark text-decoration-none" href="{% url 'profile_edit' %}">계정</a>
+                  {% endif %}
+
+
               </nav>
         </div>
             </div>
