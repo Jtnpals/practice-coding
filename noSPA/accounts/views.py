@@ -8,9 +8,11 @@ def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            signed_user = form.save()
+            # signed_user.send_welcome_email()  # FIXME: celery로 비동기 처리해야함
             messages.success(request, '회원가입 환영합니다.')
-            return redirect('/')
+            next_url = request.GET.get('next', '/')
+            return redirect(next_url)
     else:
         form = SignupForm()
     return render(request, 'accounts/signup_form.html', {

@@ -1,5 +1,12 @@
 {% extends "accounts/layout.html" %}
 {% load django_bootstrap5 %}
 {% block content %}
-    {% include "_form.html" %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6 offset-sm-3">
+                {% include "_form.html" %}
+            </div>
+        </div>
+    </div>
 {% endblock %}
