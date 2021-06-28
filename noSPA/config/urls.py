@@ -9,6 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', login_required(TemplateView.as_view(template_name='root.html')), name='root'),
     path('accounts/', include('accounts.urls')),
+    path('', include('instagram.urls')),
 ]
 
 if settings.DEBUG:

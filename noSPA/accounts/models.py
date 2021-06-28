@@ -28,5 +28,8 @@ class User(AbstractUser):
 
         send_mail(title, content, sender_email, [self.email], fail_silently=False)
 
+    @property
+    def name(self):
+        return f'{self.first_name} {self.last_name}'
 # class Profile(models.Model):
 #     pass
