@@ -21,7 +21,6 @@ class User(AbstractUser):
     gender = models.CharField(max_length=1, blank=True, choices=GenderChoices.choices)
     profile = models.ImageField(blank=True, upload_to='accounts/profile/%Y/%m/%d', help_text='45px * 45px png / jpeg')
 
-
     def send_welcome_email(self):
         title = render_to_string("accounts/welcome_email_title.txt", {'user': self})
         content = render_to_string("accounts/welcome_email_content.txt", {'user': self})
