@@ -1,5 +1,5 @@
 {% extends "instagram/layout.html" %}
-
+{% load thumbnail %}
 {% block content %}
     <div class="container">
         <div class="row">
@@ -8,8 +8,11 @@
                 <a href="{% url "profile_edit" %}">프로필 수정</a>
             </div>
             <div class="col-sm-12">
+                {{ post_list_count }}개의 포스트
+            </div>
+            <div class="col-sm-12">
                 {% for post in page_list %}
-                    <img src="{{ post.photo.url }}" alt="{{ post.photo.caption }}">
+                    <img src="{% thumbnail post.photo 512x512 crop %}" alt="{{ post.photo.caption }}">
                 {% endfor %}
             </div>
         </div>

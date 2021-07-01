@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     # Third Apps
     'debug_toolbar',
     'django_bootstrap5',
+    'easy_thumbnails',
     # Local Apps
     'accounts',
     'instagram',

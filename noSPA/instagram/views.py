@@ -37,7 +37,9 @@ def post_detail(request, pk):
 def user_page(request, username):
     page_user = get_object_or_404(get_user_model(), username=username, is_active=True)
     page_list = Post.objects.filter(author=page_user)
+    post_list_count = page_list.count()
     return render(request, "instagram/user_page.html", {
         "page_user": page_user,
         "page_list": page_list,
+        "post_list_count": post_list_count,
     })
