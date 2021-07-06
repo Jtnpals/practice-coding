@@ -1,0 +1,22 @@
+{% extends "instagram/layout.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <h2>Django</h2>
+                <hr>
+                <a href="{% url "instagram:post_new" %}" class="btn btn-primary">새 포스팅 쓰기</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 bg-success">
+                timeline
+            </div>
+            <div class="col-sm-4 bg-info">
+                {{user}}
+                side
+            </div>
+        </div>
+    </div>
+{%  endblock %}
