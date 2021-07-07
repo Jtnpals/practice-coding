@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view, action
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -35,6 +36,12 @@ from rest_framework import generics
 class PostViewSet(ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    authentication_classes = [IsAuthenticated]
+    
+    def perform_create(self, serializer):
+        author = self.request.user
+        ip = self.request.META['REMOTE_ADDR']
+        serializer.save(ip=ip, author=author)
 
     @action(detail=False, methods=['GET'])
     def public(self, request):
