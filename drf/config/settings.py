@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'instagram',
     'accounts',
 ]
@@ -133,5 +134,14 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         # 'anon': None,
         'user': '3/day',
-    }
+    },
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ],
+}
+
+JWT_AUTH = {
+    'JWT_ALLOW_REFRESH': True,
 }
