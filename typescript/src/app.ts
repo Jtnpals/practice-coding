@@ -6,4 +6,4 @@ const helloMessage: Hello = {
 
 user.name;
 
-new ClassA().a;
+new ClassA().a();
