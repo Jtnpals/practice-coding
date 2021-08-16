@@ -1,8 +1,8 @@
-import PostList from "components/PostList";
-import React from "react";
+import PostList from 'components/PostList'
+import React from 'react'
 
-function Home(){
-    return <PostList/>
+function Home() {
+  return <PostList />
 }
 
-export default Home;
+export default Home
