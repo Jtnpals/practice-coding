@@ -1,39 +1,59 @@
-import Link from 'next/link'
+import Link from "next/link";
+import logo from "../public/logo.png";
+import Image from "next/image";
+import React from "react";
+import {
+  AiOutlineUser,
+  AiOutlineShoppingCart,
+  AiOutlineQuestionCircle,
+} from "react-icons/ai";
 
 const Navbar = () => {
   return (
-    <nav className="container m-auto bg-gray-400 flex text-xl items-center h-14">
-      <div className="logo text-4xl ml-4 mr-5">amuamu</div>
-      <li className="flex gap-2">
+    <nav className="xl:w-320 m-auto bg-gray-400 flex text-xl items-center h-104 font-light mb-10">
+      <div className="flex items-center h-14 ml-4 mr-5 text-4xl">amu:amu</div>
+      <li className="flex gap-5">
         <ul>
           <Link href="/">
-            <a>home</a>
+            <a>홈</a>
           </Link>
         </ul>
         <ul>
           <Link href="/about">
-            <a>about</a>
+            <a>상품</a>
           </Link>
         </ul>
         <ul>
           <Link href="/list">
-            <a>list</a>
+            <a>이벤트</a>
           </Link>
         </ul>
       </li>
-      <li className="flex ml-auto gap-3 mr-4">
+      <li className="flex ml-auto gap-5 mr-4 text-3xl items-center">
         <ul>
-          <a>user</a>
+          <Link href="/list">
+            <a>
+              <AiOutlineUser />
+            </a>
+          </Link>
         </ul>
         <ul>
-          <a>wish</a>
+          <Link href="/list">
+            <a>
+              <AiOutlineShoppingCart />
+            </a>
+          </Link>
         </ul>
         <ul>
-          <a>some</a>
+          <Link href="/list">
+            <a>
+              <AiOutlineQuestionCircle />
+            </a>
+          </Link>
         </ul>
       </li>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
