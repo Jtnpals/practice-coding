@@ -22,7 +22,7 @@ const usersReducer = (state, action) => {
     case 'GET_USER':
     case 'GET_USER_SUCCESS':
     case 'GET_USER_ERROR':
-      return usersHandler(state, action)
+      return userHandler(state, action)
     default:
       throw new Error(`unhandled action type, ${action.type}`)
   }
@@ -50,13 +50,15 @@ export function useUsersState() {
   return state
 }
 
-export function useUsersDispatch() {
+const useUsersDispatch = () => {
   const dispatch = useContext(UsersDispatchContext)
   if (!dispatch) {
     throw new Error('Cannot find UserProvider')
   }
   return dispatch
 }
+
+export { useUsersDispatch }
 
 export const getUsers = createAsyncDispatcher('GET_USERS', api.getUsers)
 export const getUser = createAsyncDispatcher('GET_USES', api.getUser)
