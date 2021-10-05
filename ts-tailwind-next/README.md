@@ -24,4 +24,5 @@ Visual Studio Intellicode
 
 Bracket Pair Colorizer 2
 
+Import Cost
 // 설정에서 emmet 항목추가 key: javascript value:javascriptreact
