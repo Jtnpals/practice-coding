@@ -20,6 +20,7 @@ Prettier
 TapOut
 
 Tailwind CSS IntelliSense
+//cSpell:ignore Intellicode
 Visual Studio Intellicode
 
 Bracket Pair Colorizer 2
