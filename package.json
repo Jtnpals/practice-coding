@@ -1,0 +1,19 @@
+{
+  "name": "practice-typescript",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Jtnpals/practice-typescript.git",
+  "author": "Jtnpals <Jtnpals@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^4.4.4"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "prestart": "tsc"
+  },
+  "devDependencies": {
+    "prettier": "^2.4.1",
+    "tsc-watch": "^4.5.0"
+  }
+}
