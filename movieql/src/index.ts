@@ -1,50 +1,32 @@
 import { GraphQLServer } from 'graphql-yoga'
+import { movies, getById, addMovie, deleteMovie } from '../graphql/db'
 
 const typeDefs = `
-type Person{
+type Movie{
     id: Int!
     name: String!
-    age: Int!
-    gender: String!
+    score: Int!
 }
 
 type Query {
-    people: [Person]!
-    person(id: Int!): Person
+    movies: [Movie]!
+    movie(id: Int!): Movie
+}
+
+type Mutation {
+    addMovie(name: String!, score: Int!): Movie!
+    deleteMovie(id: Int!): Boolean!
 }
 `
 
-const people = [
-    {
-        id: 0,
-        name:'Tom',
-        age:17,
-        gender:'male'
-    },
-    {
-        id: 1,
-        name:'Amy',
-        age:17,
-        gender:'Female'
-    },
-    {
-        id: 2,
-        name:'Emily',
-        age:17,
-        gender:'Female'
-    }
-
-]
-
-const getById = id => {
-    const filteredPeople = people.filter(person => id === person.id)
-    return filteredPeople[0]
-}
-
 const resolvers = {
     Query: {
-        people: () => people,
-        person: (_, {id}) => getById(id),
+        movies: () => movies,
+        movie: (_, {id}) => getById(id),
+    },
+    Mutation: {
+        addMovie: (_, {name, score}) => addMovie(name, score),
+        deleteMovie: (_, {id}) => deleteMovie(id)
     }
 }
 
