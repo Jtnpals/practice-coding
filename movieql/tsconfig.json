@@ -9,7 +9,7 @@
     "paths": {
       "@/*":["src/*"],
       "@graphql/*":["graphql/*"]
-    },
+    }
     },
     "include": [
       "src/**/*",
@@ -17,5 +17,6 @@
     ],
     "exclude": [
       "node_modules"
-    ]
+    ],
+
 }
