@@ -1,12 +1,41 @@
+import { gql, useQuery } from "@apollo/client";
+import Movie from "../components/Movie";
+
+const GET_MOVIES = gql`
+  query {
+    movies {
+      id
+      medium_cover_image
+      isLiked @client
+    }
+  }
+`;
+
 const Home = () => {
+  const { loading, error, data } = useQuery(GET_MOVIES);
+  console.log(loading, error, data);
+
   return (
     <div>
-      <h1>Home</h1>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-        doloremque, quidem quisquam, quisquam quisquam quisquam quisquam
-        dignissimos.
-      </p>
+      {loading && <p>Loading...</p>}
+      {error && <p>Error :(</p>}
+      {data &&
+        data.movies.map(
+          (movie: {
+            id: string;
+            medium_cover_image: string | undefined;
+            title: string | undefined;
+            isLiked: boolean;
+          }) => (
+            <Movie
+              key={movie.id}
+              id={movie.id}
+              medium_cover_image={movie.medium_cover_image}
+              title={movie.title}
+              isLiked={movie.isLiked}
+            />
+          )
+        )}
     </div>
   );
 };
