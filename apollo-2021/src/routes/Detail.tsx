@@ -5,11 +5,13 @@ import { Key } from "react";
 const GET_MOVIE = gql`
   query getMovie($id: Int!) {
     movie(id: $id) {
+      id
       title
       medium_cover_image
       language
       rating
       description_intro
+      isLiked @client
     }
 
     suggestions(id: $id) {
@@ -34,6 +36,7 @@ const Detail = () => {
           <h1>{data.movie.title}</h1>
           <img src={data.movie.medium_cover_image} alt={data.movie.title} />
           <p>{data.movie.description_intro}</p>
+          <p>{data.movie.isLiked ? "❤" : "😒"}</p>
         </div>
       )}
 
