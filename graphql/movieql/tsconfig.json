@@ -1,0 +1,22 @@
+
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": "",
+    "paths": {
+      "@/*":["src/*"],
+      "@graphql/*":["graphql/*"]
+    }
+    },
+    "include": [
+      "src/**/*",
+      "graphql/**/*"
+    ],
+    "exclude": [
+      "node_modules"
+    ],
+
+}
