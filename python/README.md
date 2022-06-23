@@ -1,2 +1,0 @@
-# practice-python
-Python basic

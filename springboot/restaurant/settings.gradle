@@ -1,5 +1,0 @@
-rootProject.name = 'restaurant'
-include 'admin-api'
-include 'common-api'
-include 'customer-api'
-
