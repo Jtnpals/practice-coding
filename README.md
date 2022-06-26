@@ -1,34 +1,85 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# setting
 
-## Getting Started
-
-First, run the development server:
+## husky & commitlint & lint-staged
 
 ```bash
-npm run dev
-# or
-yarn dev
+npm install --save-dev lint-staged
+npm install --save-dev @commitlint/config-conventional @commitlint/cli
+npx husky-init && npm install
+npx husky add .husky/commit-msg 'npx --no -- commitlint --edit "$1"'
+npx husky set .husky/pre-commit 'npx lint-staged'
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+commitlint.config.js
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```js
+module.exports = {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    // 'scope-enum': [2, 'always', ['yourscope', 'yourscope']],
+    'type-enum': [
+      2,
+      'always',
+      [
+        'feat',
+        'fix',
+        'docs',
+        'chore',
+        'style',
+        'refactor',
+        'ci',
+        'test',
+        'perf',
+        'revert',
+      ],
+    ],
+  },
+};
+```
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## prettier & eslint
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+package.json
 
-## Learn More
+```json
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings=0",
+      "prettier -w"
+    ],
+    "src/**/*.{json,css,scss,md}": [
+      "prettier -w"
+    ]
+  }
+```
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install --save-dev prettier eslint-config-prettier
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install --save-dev eslint-plugin-unused-imports
+npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```
 
-## Deploy on Vercel
+.eslintrc.json
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```json
+{
+  "plugins": ["unused-imports"],
+  "rules": {
+    "no-unused-vars": "off", // or "@typescript-eslint/no-unused-vars": "off",
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  }
+}
+```
